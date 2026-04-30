@@ -5687,4 +5687,168 @@ timestamp:受时区影响，相对时间，占4个字节，自动更新
 </ul>
 ]]></content>
   </entry>
+  <entry>
+    <title>后端开发专有名字记忆（20260430笔记）</title>
+    <url>/2026/04/30/260430/</url>
+    <content><![CDATA[<h1 id="InnoDB-按锁粒度分类"><a href="#InnoDB-按锁粒度分类" class="headerlink" title="InnoDB 按锁粒度分类"></a>InnoDB 按锁粒度分类</h1><ol>
+<li><strong>表级锁</strong>：锁住整张表，粒度最大、开销小、并发低。</li>
+<li><strong>行级锁</strong>：锁住单行&#x2F;多行记录，粒度最小、开销大、<strong>并发最高</strong>。</li>
+<li><strong>页级锁</strong>：锁住数据页，粒度介于表锁和行锁之间。</li>
+</ol>
+<p><strong>最常用：行级锁</strong>（InnoDB 默认主打，支撑高并发事务）。</p>
+<h1 id="MySQL-慢查询日志默认是关闭（OFF）的，不会自动记录慢-SQL"><a href="#MySQL-慢查询日志默认是关闭（OFF）的，不会自动记录慢-SQL" class="headerlink" title="MySQL 慢查询日志默认是关闭（OFF）的，不会自动记录慢 SQL"></a>MySQL 慢查询日志默认是关闭（OFF）的，不会自动记录慢 SQL</h1><h1 id="存储过程：把一堆-SQL-语句打包好，提前编译存在-MySQL-服务器里，给它起个名字，以后直接调用名字就能一次性执行完。"><a href="#存储过程：把一堆-SQL-语句打包好，提前编译存在-MySQL-服务器里，给它起个名字，以后直接调用名字就能一次性执行完。" class="headerlink" title="存储过程：把一堆 SQL 语句打包好，提前编译存在 MySQL 服务器里，给它起个名字，以后直接调用名字就能一次性执行完。"></a>存储过程：把一堆 SQL 语句打包好，提前编译存在 MySQL 服务器里，给它起个名字，以后直接调用名字就能一次性执行完。</h1><p>即数据库的脚本</p>
+<h1 id="EFK-架构-三大组件-全称与作用"><a href="#EFK-架构-三大组件-全称与作用" class="headerlink" title="EFK 架构 三大组件 全称与作用"></a>EFK 架构 三大组件 全称与作用</h1><h2 id="EFK-分别对应"><a href="#EFK-分别对应" class="headerlink" title="EFK 分别对应"></a>EFK 分别对应</h2><ul>
+<li><strong>E</strong>：<strong>Elasticsearch</strong></li>
+<li><strong>F</strong>：<strong>Fluentd</strong></li>
+<li><strong>K</strong>：<strong>Kibana</strong></li>
+</ul>
+<hr>
+<h2 id="各自作用"><a href="#各自作用" class="headerlink" title="各自作用"></a>各自作用</h2><h3 id="1-Fluentd（采集层-F）"><a href="#1-Fluentd（采集层-F）" class="headerlink" title="1. Fluentd（采集层 F）"></a>1. Fluentd（采集层 F）</h3><p><strong>负责：收集、过滤、转发日志</strong></p>
+<ul>
+<li>从服务器&#x2F;容器&#x2F;应用 <strong>采集日志</strong></li>
+<li>做清洗、过滤、格式化</li>
+<li>转发给 Elasticsearch<br>👉 定位：<strong>日志搬运工+预处理</strong></li>
+</ul>
+<h3 id="2-Elasticsearch（存储检索层-E）"><a href="#2-Elasticsearch（存储检索层-E）" class="headerlink" title="2. Elasticsearch（存储检索层 E）"></a>2. Elasticsearch（存储检索层 E）</h3><p><strong>负责：存储 + 检索 + 分析日志</strong></p>
+<ul>
+<li>接收 Fluentd 发来的日志</li>
+<li>分词、索引、持久化存储</li>
+<li>提供快速搜索、聚合统计<br>👉 定位：<strong>日志数据库+搜索引擎</strong></li>
+</ul>
+<h3 id="3-Kibana（可视化层-K）"><a href="#3-Kibana（可视化层-K）" class="headerlink" title="3. Kibana（可视化层 K）"></a>3. Kibana（可视化层 K）</h3><p><strong>负责：展示、图表、告警</strong></p>
+<ul>
+<li>连接 Elasticsearch</li>
+<li>做日志查询、仪表盘、折线图、饼图</li>
+<li>日志检索、故障排查、监控告警<br>👉 定位：<strong>日志可视化看板</strong></li>
+</ul>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><strong>Fluentd 收日志 → Elasticsearch 存和搜日志 → Kibana 看图查日志</strong></p>
+<p>顺带区分下 ELK：<br>ELK 是 <strong>Logstash</strong> 代替了 Fluentd，Fluentd 更轻量、适合容器&#x2F;K8s，所以现在多用 EFK。</p>
+<h1 id="EFK-看的是「日志内容」，链路追踪看的是「请求流程」EFK-只能看零散日志，看不出一次请求跨了哪些服务、耗时卡在哪；链路追踪专门干这件事。"><a href="#EFK-看的是「日志内容」，链路追踪看的是「请求流程」EFK-只能看零散日志，看不出一次请求跨了哪些服务、耗时卡在哪；链路追踪专门干这件事。" class="headerlink" title="EFK 看的是「日志内容」，链路追踪看的是「请求流程」EFK 只能看零散日志，看不出一次请求跨了哪些服务、耗时卡在哪；链路追踪专门干这件事。"></a>EFK 看的是「日志内容」，链路追踪看的是「请求流程」EFK 只能看零散日志，看不出一次请求跨了哪些服务、耗时卡在哪；链路追踪专门干这件事。</h1><h1 id="线程池好处"><a href="#线程池好处" class="headerlink" title="线程池好处"></a>线程池好处</h1><ol>
+<li><p><strong>降低资源消耗</strong><br>避免频繁创建、销毁线程，复用已有线程，减少系统开销。</p>
+</li>
+<li><p><strong>提高响应速度</strong><br>任务来了不用新建线程，直接用空闲线程立马执行，不用等待创建线程的时间。</p>
+</li>
+<li><p><strong>便于统一管理</strong><br>统一控制线程数量、排队策略、拒绝策略，防止无限创建线程导致系统宕机。</p>
+</li>
+</ol>
+<h1 id="重定向-vs-请求转发"><a href="#重定向-vs-请求转发" class="headerlink" title="重定向 vs 请求转发"></a>重定向 vs 请求转发</h1><h2 id="1-本质区别"><a href="#1-本质区别" class="headerlink" title="1. 本质区别"></a>1. 本质区别</h2><ul>
+<li><strong>请求转发</strong>：<strong>服务器内部跳转</strong>，只发<strong>1次请求</strong></li>
+<li><strong>重定向</strong>：<strong>浏览器两次请求</strong>，服务器告诉浏览器重新发新地址</li>
+</ul>
+<h2 id="2-地址栏变化"><a href="#2-地址栏变化" class="headerlink" title="2. 地址栏变化"></a>2. 地址栏变化</h2><ul>
+<li>转发：<strong>地址栏不变</strong></li>
+<li>重定向：<strong>地址栏变成新URL</strong></li>
+</ul>
+<h2 id="3-数据是否保留"><a href="#3-数据是否保留" class="headerlink" title="3. 数据是否保留"></a>3. 数据是否保留</h2><ul>
+<li>转发：<strong>共享同一个 request 域对象</strong>，参数不丢</li>
+<li>重定向：<strong>两次独立请求</strong>，原 request 数据丢失</li>
+</ul>
+<h2 id="4-访问范围"><a href="#4-访问范围" class="headerlink" title="4. 访问范围"></a>4. 访问范围</h2><ul>
+<li>转发：只能跳<strong>本项目</strong>资源</li>
+<li>重定向：可以跳<strong>任意网站、外部地址</strong></li>
+</ul>
+<h2 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h2><p><strong>转发是服务器内部偷偷走一遍，地址不变、数据还在；<br>重定向是让浏览器再发一次请求，地址变了、数据重置。</strong></p>
+<h1 id="页表-vs-TLB"><a href="#页表-vs-TLB" class="headerlink" title="页表 vs TLB"></a>页表 vs TLB</h1><p><strong>页表</strong>：操作系统放在内存里，用来把虚拟地址翻译成物理地址的<strong>映射对照表</strong>；<br><strong>TLB</strong>：CPU内部的高速缓存，缓存页表常用映射，专门加速地址翻译的<strong>硬件小快表</strong>。</p>
+<h1 id="MCP（Model-Context-Protocol）上下文拆分的标准模块（五大核心）："><a href="#MCP（Model-Context-Protocol）上下文拆分的标准模块（五大核心）：" class="headerlink" title="MCP（Model Context Protocol）上下文拆分的标准模块（五大核心）："></a>MCP（Model Context Protocol）上下文拆分的标准模块（五大核心）：</h1><ol>
+<li><strong>System Instructions（系统指令）</strong>：模型行为与能力的顶层设定。</li>
+<li><strong>User Context（用户上下文）</strong>：用户偏好、目标、历史交互。</li>
+<li><strong>Memory（记忆）</strong>：短期对话记录 + 长期用户画像&#x2F;知识。</li>
+<li><strong>Resources（资源）</strong>：RAG文档、文件、数据库等外部数据。</li>
+<li><strong>Tools（工具）</strong>：可调用的函数&#x2F;API定义与执行结果。</li>
+</ol>
+<p><strong>系统指令 + 用户上下文 + 记忆 + 资源 + 工具</strong>。</p>
+<h1 id="链路追踪里-Span-和-Trace-分别代表什么？"><a href="#链路追踪里-Span-和-Trace-分别代表什么？" class="headerlink" title="链路追踪里 Span 和 Trace 分别代表什么？"></a>链路追踪里 Span 和 Trace 分别代表什么？</h1><table>
+<thead>
+<tr>
+<th align="left">概念</th>
+<th align="left">含义</th>
+<th align="left">类比</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Trace</strong></td>
+<td align="left"><strong>整条完整请求链路</strong>，一次客户端请求从头到尾跨所有服务的全过程，全局唯一 <code>TraceID</code></td>
+<td align="left">一整趟快递物流全程</td>
+</tr>
+<tr>
+<td align="left"><strong>Span</strong></td>
+<td align="left"><strong>链路里的每一小段</strong>，一个服务、一个接口、一次数据库调用就是一个 Span，有自己 <code>SpanID</code>、耗时、起止时间</td>
+<td align="left">每一个中转站的一段运输环节</td>
+</tr>
+</tbody></table>
+<h1 id="HTTP-301-vs-302-核心区别"><a href="#HTTP-301-vs-302-核心区别" class="headerlink" title="HTTP 301 vs 302 核心区别"></a>HTTP 301 vs 302 核心区别</h1><h3 id="1-含义"><a href="#1-含义" class="headerlink" title="1. 含义"></a>1. 含义</h3><ul>
+<li><strong>301 永久重定向</strong>：资源<strong>永久搬家</strong>，以后永远用新地址</li>
+<li><strong>302 临时重定向</strong>：资源<strong>暂时挪一下</strong>，下次还可以访问旧地址</li>
+</ul>
+<h3 id="2-浏览器缓存"><a href="#2-浏览器缓存" class="headerlink" title="2. 浏览器缓存"></a>2. 浏览器缓存</h3><ul>
+<li><strong>301</strong>：浏览器<strong>会缓存</strong>，下次直接跳新地址，不请求旧地址</li>
+<li><strong>302</strong>：<strong>不缓存</strong>，每次都要先请求旧地址，再收到跳转</li>
+</ul>
+<h3 id="3-SEO-搜索引擎"><a href="#3-SEO-搜索引擎" class="headerlink" title="3. SEO 搜索引擎"></a>3. SEO 搜索引擎</h3><ul>
+<li><strong>301</strong>：权重<strong>转移到新URL</strong></li>
+<li><strong>302</strong>：权重<strong>保留在旧URL</strong>，不传递</li>
+</ul>
+<h3 id="4-适用场景"><a href="#4-适用场景" class="headerlink" title="4. 适用场景"></a>4. 适用场景</h3><ul>
+<li><strong>301</strong>：域名更换、页面永久下线、旧地址彻底废弃</li>
+<li><strong>302</strong>：登录跳转、临时活动页、临时维护、登录后跳首页</li>
+</ul>
+<h2 id="总结-2"><a href="#总结-2" class="headerlink" title="总结"></a>总结</h2><p><strong>301永久搬家带缓存、传权重；302临时跳转不缓存、不留权重。</strong></p>
+<h1 id="幻读"><a href="#幻读" class="headerlink" title="幻读"></a>幻读</h1><h2 id="一、什么是幻读"><a href="#一、什么是幻读" class="headerlink" title="一、什么是幻读"></a>一、什么是幻读</h2><p><strong>幻读</strong>：一个事务<strong>两次范围查询</strong>，中间被别的事务<strong>插入&#x2F;删除</strong>了新数据，导致前后查到的行数不一样，像“凭空多了&#x2F;少了一行”，就叫幻读。</p>
+<p>例子：<br>事务A：查 <code>id between 1 and 10</code>，查出3条<br>事务B：<strong>插入一条 id&#x3D;5</strong> 并提交<br>事务A：再查同范围，变成4条 → <strong>多出一行，就是幻读</strong></p>
+<blockquote>
+<p>区别脏读、不可重复读：</p>
+<ul>
+<li>脏读：读到别人未提交的数据</li>
+<li>不可重复读：同一行<strong>内容变了</strong>（被更新）</li>
+<li>幻读：<strong>行数变了</strong>（被插入&#x2F;删除）</li>
+</ul>
+</blockquote>
+<h2 id="二、InnoDB-怎么解决幻读"><a href="#二、InnoDB-怎么解决幻读" class="headerlink" title="二、InnoDB 怎么解决幻读"></a>二、InnoDB 怎么解决幻读</h2><ol>
+<li><p><strong>隔离级别</strong><br>InnoDB 默认 <strong>RR 可重复读</strong>，<strong>靠 MVCC 解决了大部分幻读</strong>（普通快照读）。</p>
+</li>
+<li><p><strong>间隙锁 + 临键锁（Next-Key Lock）</strong><br>如果是<strong>当前读</strong>（select … for update &#x2F; update &#x2F; delete）：<br>InnoDB 用 <strong>临键锁 &#x3D; 行锁 + 间隙锁</strong><br>锁住<strong>整个范围区间</strong>，禁止其他事务在这个区间<strong>插入新数据</strong>，<strong>彻底杜绝幻读</strong>。</p>
+</li>
+</ol>
+<h2 id="总结-3"><a href="#总结-3" class="headerlink" title="总结"></a>总结</h2><p><strong>幻读：范围查询时，其他事务插入&#x2F;删除，导致前后查询行数不一致。</strong><br><strong>InnoDB 靠 MVCC 解决快照读幻读；靠 间隙锁+临键锁 解决当前读幻读。</strong></p>
+<h2 id="MVCC-就是多版本并发控制，InnoDB-靠它实现不加锁也能高并发读，读的是数据历史快照版本，不用等写事务释放锁。"><a href="#MVCC-就是多版本并发控制，InnoDB-靠它实现不加锁也能高并发读，读的是数据历史快照版本，不用等写事务释放锁。" class="headerlink" title="MVCC 就是多版本并发控制，InnoDB 靠它实现不加锁也能高并发读，读的是数据历史快照版本，不用等写事务释放锁。"></a>MVCC 就是多版本并发控制，InnoDB 靠它实现不加锁也能高并发读，读的是数据历史快照版本，不用等写事务释放锁。</h2><h1 id="MySQL-InnoDB-四个隔离级别-由低到高"><a href="#MySQL-InnoDB-四个隔离级别-由低到高" class="headerlink" title="MySQL InnoDB 四个隔离级别 由低到高"></a>MySQL InnoDB 四个隔离级别 <strong>由低到高</strong></h1><ol>
+<li><strong>读未提交</strong>（Read Uncommitted）</li>
+<li><strong>读已提交</strong>（Read Committed）</li>
+<li><strong>可重复读</strong>（Repeatable Read）👉 <strong>InnoDB 默认</strong></li>
+<li><strong>串行化</strong>（Serializable）</li>
+</ol>
+<h2 id="对应问题解决（速记）"><a href="#对应问题解决（速记）" class="headerlink" title="对应问题解决（速记）"></a>对应问题解决（速记）</h2><ul>
+<li>读未提交：有<strong>脏读、不可重复读、幻读</strong></li>
+<li>读已提交：解决<strong>脏读</strong>，还有不可重复读、幻读</li>
+<li>可重复读：解决<strong>脏读、不可重复读</strong>，普通快照读解决大部分幻读</li>
+<li>串行化：<strong>全部解决</strong>，但并发最低、性能最差</li>
+</ul>
+<h1 id="redis数据类型"><a href="#redis数据类型" class="headerlink" title="redis数据类型"></a>redis数据类型</h1><p>五大基础类型<br>String 字符串：最常用，存字符串、数字、JSON<br>List 列表：双向链表，有序可重复，做队列、栈<br>Set 集合：无序、不可重复，去重、交集并集<br>Hash 哈希：类似 Map，存对象字段，适合存用户信息<br>ZSet 有序集合：带分数排序、不可重复，排行榜场景<br>三种特殊类型<br>Geospatial 地理位置：经纬度、附近的人<br>Bitmap 位图：签到、状态标记、超省内存<br>HyperLogLog：基数统计，统计 UV、去重访问量</p>
+<h1 id="限流，熔断，降级"><a href="#限流，熔断，降级" class="headerlink" title="限流，熔断，降级"></a>限流，熔断，降级</h1><ol>
+<li>限流<br>作用：挡流量，防止请求太多把系统压垮只允许固定数量请求进来，多余的直接拦住。例子：景区限制同时入园人数，超了就排队 &#x2F; 提示稍后再试。场景：秒杀、活动高峰，防突发流量。</li>
+<li>熔断<br>作用：下游服务崩了，立刻断开，不继续调用检测到依赖服务超时、报错率太高，直接切断调用，避免连锁拖垮自己。等下游恢复了再慢慢尝试恢复调用。例子：你打电话给别人一直占线，不再反复拨号，过一会再打。</li>
+<li>降级<br>作用：系统扛不住时，放弃非核心功能，保核心业务流量大或资源不足时，关掉不重要的功能，返回兜底默认数据。例子：APP 高峰期关闭商品详情推荐、关闭积分签到，只保下单、支付核心流程。</li>
+</ol>
+<h1 id="分布式事务：一次业务操作，涉及多个数据库、多个微服务，要保证要么全部成功提交，要么全部失败回滚，不能一半成功一半失败，这就是分布式事务。"><a href="#分布式事务：一次业务操作，涉及多个数据库、多个微服务，要保证要么全部成功提交，要么全部失败回滚，不能一半成功一半失败，这就是分布式事务。" class="headerlink" title="分布式事务：一次业务操作，涉及多个数据库、多个微服务，要保证要么全部成功提交，要么全部失败回滚，不能一半成功一半失败，这就是分布式事务。"></a>分布式事务：一次业务操作，涉及多个数据库、多个微服务，要保证要么全部成功提交，要么全部失败回滚，不能一半成功一半失败，这就是分布式事务。</h1><h1 id="分布式事务常见解决方案"><a href="#分布式事务常见解决方案" class="headerlink" title="分布式事务常见解决方案"></a>分布式事务常见解决方案</h1><h2 id="1-本地消息表（可靠消息最终一致性）"><a href="#1-本地消息表（可靠消息最终一致性）" class="headerlink" title="1. 本地消息表（可靠消息最终一致性）"></a>1. 本地消息表（可靠消息最终一致性）</h2><p>思路：<br>本地业务 + 消息记录<strong>在同一个本地事务</strong>提交，再由定时任务轮询发消息，下游处理完成后回写状态。<br>特点：简单、接地气、成本低；适合电商订单、支付场景。</p>
+<h2 id="2-事务消息（RocketMQ-Kafka-事务消息）"><a href="#2-事务消息（RocketMQ-Kafka-事务消息）" class="headerlink" title="2. 事务消息（RocketMQ&#x2F;Kafka 事务消息）"></a>2. 事务消息（RocketMQ&#x2F;Kafka 事务消息）</h2><p>思路：<br>半消息预发 → 本地事务执行 → 提交&#x2F;回滚消息 → 下游消费。<br>特点：不用自己建本地消息表，中间件封装好，业界主流。</p>
+<h2 id="3-TCC-补偿事务（Try-Confirm-Cancel）"><a href="#3-TCC-补偿事务（Try-Confirm-Cancel）" class="headerlink" title="3. TCC 补偿事务（Try-Confirm-Cancel）"></a>3. TCC 补偿事务（Try-Confirm-Cancel）</h2><p>三段式：</p>
+<ul>
+<li>Try：资源检查、预冻结</li>
+<li>Confirm：确认提交</li>
+<li>Cancel：回滚补偿<br>特点：<strong>强一致性、高可用</strong>；但代码侵入大、开发量大、要写补偿回滚逻辑。</li>
+</ul>
+<h2 id="4-SAGA-模式"><a href="#4-SAGA-模式" class="headerlink" title="4. SAGA 模式"></a>4. SAGA 模式</h2><p>思路：长事务拆分，每个子事务配一个<strong>逆向回滚事务</strong>，某步失败就依次逆向补偿。<br>特点：适合长流程、跨多服务事务；最终一致，不保证强实时一致。</p>
+<h2 id="5-Seata-AT-模式（最常用）"><a href="#5-Seata-AT-模式（最常用）" class="headerlink" title="5. Seata AT 模式（最常用）"></a>5. Seata AT 模式（最常用）</h2><p>思路：<br>基于<strong>全局事务 + 分支事务 + undo log</strong>，一阶段提交快照、二阶段批量提交&#x2F;回滚。<br>特点：<strong>无侵入、开发简单</strong>，微服务项目首选；中间件托管分布式事务。</p>
+<h2 id="6-最大努力通知"><a href="#6-最大努力通知" class="headerlink" title="6. 最大努力通知"></a>6. 最大努力通知</h2><p>思路：<br>业务完成后异步通知下游，失败就定时重试，保证最终能收到。<br>特点：适用于<strong>对账、支付结果通知</strong>等允许短暂不一致的场景。</p>
+<hr>
+<p><strong>本地消息表、MQ事务消息、TCC、SAGA、Seata AT、最大努力通知。</strong></p>
+<ul>
+<li>要简单：用本地消息表 &#x2F; MQ事务消息</li>
+<li>微服务省事：Seata AT</li>
+<li>要强一致高可靠：TCC</li>
+<li>长流程业务：SAGA</li>
+<li>对账回调：最大努力通知</li>
+</ul>
+]]></content>
+  </entry>
 </search>
