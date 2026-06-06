@@ -1,0 +1,382 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>计算机网络相关八股复习 | 皖月清风的个人博客</title><meta name="author" content="皖月清风"><meta name="copyright" content="皖月清风"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="采集插件需要增量采集，避免重复抓取、重复入库、浪费性能，你在 Go 里怎么做去重？Redis Bitmap&#x2F; 布隆过滤器    对比项 Redis Set Redis Bitmap 布隆过滤器 (本地 &#x2F; RedisBloom)    准确性 100% 精准，无误判 100% 精准，无误判 概率型：不存在 &#x3D; 一定不存在，存在 &#x3D; 可能误判，误判率可控 (0">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机网络相关八股复习">
+<meta property="og:url" content="https://pooiwoop-github-io.pages.dev/2026/06/06/260606/index.html">
+<meta property="og:site_name" content="皖月清风的个人博客">
+<meta property="og:description" content="采集插件需要增量采集，避免重复抓取、重复入库、浪费性能，你在 Go 里怎么做去重？Redis Bitmap&#x2F; 布隆过滤器    对比项 Redis Set Redis Bitmap 布隆过滤器 (本地 &#x2F; RedisBloom)    准确性 100% 精准，无误判 100% 精准，无误判 概率型：不存在 &#x3D; 一定不存在，存在 &#x3D; 可能误判，误判率可控 (0">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pooiwoop-github-io.pages.dev/img/2026/20260323-180427.012-16.jpg">
+<meta property="article:published_time" content="2026-06-06T04:45:34.000Z">
+<meta property="article:modified_time" content="2026-06-06T06:46:34.218Z">
+<meta property="article:author" content="皖月清风">
+<meta property="article:tag" content="ARP">
+<meta property="article:tag" content="DHCP">
+<meta property="article:tag" content="DNS">
+<meta property="article:tag" content="HTTP">
+<meta property="article:tag" content="HTTPS">
+<meta property="article:tag" content="ICMP">
+<meta property="article:tag" content="TCP&#x2F;IP">
+<meta property="article:tag" content="计算机网络">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pooiwoop-github-io.pages.dev/img/2026/20260323-180427.012-16.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "计算机网络相关八股复习",
+  "url": "https://pooiwoop-github-io.pages.dev/2026/06/06/260606/",
+  "image": "https://pooiwoop-github-io.pages.dev/img/2026/20260323-180427.012-16.jpg",
+  "datePublished": "2026-06-06T04:45:34.000Z",
+  "dateModified": "2026-06-06T06:46:34.218Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "皖月清风",
+      "url": "https://pooiwoop-github-io.pages.dev"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://pooiwoop-github-io.pages.dev/2026/06/06/260606/index.html"><link rel="preconnect" href="//cdnjs.cloudflare.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdnjs.cloudflare.com/ajax/libs/egjs-infinitegrid/4.13.0/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '计算机网络相关八股复习',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><style>
+/* 首页标题样式 */
+.index-info .site-title {
+  font-size: 3rem;
+  opacity: 0.5;
+}
+</style>
+<meta name="generator" content="Hexo 8.1.1"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(/img/2026/8c6271da33fe31a39853e3d1198341d23546594806860148.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/butterfly-icon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">28</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">45</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/2026/20260323-180427.012-16.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">皖月清风的个人博客</span></a><a class="nav-page-title" href="/"><span class="site-name">计算机网络相关八股复习</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">计算机网络相关八股复习</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-06T04:45:34.000Z" title="发表于 2026-06-06 12:45:34">2026-06-06</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-06T06:46:34.218Z" title="更新于 2026-06-06 14:46:34">2026-06-06</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="采集插件需要增量采集，避免重复抓取、重复入库、浪费性能，你在-Go-里怎么做去重？"><a href="#采集插件需要增量采集，避免重复抓取、重复入库、浪费性能，你在-Go-里怎么做去重？" class="headerlink" title="采集插件需要增量采集，避免重复抓取、重复入库、浪费性能，你在 Go 里怎么做去重？"></a>采集插件需要增量采集，避免重复抓取、重复入库、浪费性能，你在 Go 里怎么做去重？</h1><p><strong>Redis Bitmap&#x2F; 布隆过滤器</strong></p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>Redis Set</th>
+<th>Redis Bitmap</th>
+<th>布隆过滤器 (本地 &#x2F; RedisBloom)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>准确性</td>
+<td>100% 精准，无误判</td>
+<td>100% 精准，无误判</td>
+<td>概率型：不存在 &#x3D; 一定不存在，存在 &#x3D; 可能误判，误判率可控 (0.01%~1%)</td>
+</tr>
+<tr>
+<td>存储数据</td>
+<td>完整存原始字符串 (URL &#x2F; 字符串)</td>
+<td>只能存数字下标（偏移量），无法直接存字符串</td>
+<td>不存原始数据，多次 hash 映射 bit 位，只存标记位</td>
+</tr>
+<tr>
+<td>内存开销</td>
+<td>极大，单条 URL≈40~60Byte；1000 万 URL≈500MB+</td>
+<td>稠密数据极省：1 亿 bit≈12MB；稀疏数据巨浪费（下标离散空出大量 bit）</td>
+<td>极致节省：100 万数据、0.01% 误判≈2.3MB，单元素仅十几 bit，是 Set 的 1&#x2F;200 左右</td>
+</tr>
+<tr>
+<td>增删能力</td>
+<td>支持新增、删除、随机剔除成员</td>
+<td>支持 SETBIT&#x2F;GETBIT&#x2F;DEL，单个 bit 可清零删除</td>
+<td>标准布隆不支持删除（计数布隆除外，空间翻倍）</td>
+</tr>
+<tr>
+<td>查询复杂度</td>
+<td>O(1)，SISMEMBER</td>
+<td>O(1) GETBIT</td>
+<td>O (k)，k &#x3D; 哈希函数数量 (7~14)，固定耗时，不随数据量变大而变慢</td>
+</tr>
+<tr>
+<td>数据格式限制</td>
+<td>任意字符串：URL、手机号、文本都行</td>
+<td>必须转为数字 ID，不能直接存 URL</td>
+<td>任意字符串，自动 hash 转下标，无需人工编码 ID</td>
+</tr>
+</tbody></table>
+<h1 id="四次挥手：断开-TCP-连接（全双工，两端可单独关发送）"><a href="#四次挥手：断开-TCP-连接（全双工，两端可单独关发送）" class="headerlink" title="四次挥手：断开 TCP 连接（全双工，两端可单独关发送）"></a>四次挥手：断开 TCP 连接（全双工，两端可单独关发送）</h1><p>标志位：FIN(结束)、ACK(确认)，任意一方都能主动发起关闭，以客户端主动关闭举例：</p>
+<h2 id="第一次挥手：C→S：FIN-1"><a href="#第一次挥手：C→S：FIN-1" class="headerlink" title="第一次挥手：C→S：FIN&#x3D;1"></a>第一次挥手：C→S：FIN&#x3D;1</h2><p>客户端不再发数据，发 FIN 报文，C 进入FIN_WAIT_1。<br>我不再发数据了。</p>
+<h2 id="第二次挥手：S→C：ACK-1"><a href="#第二次挥手：S→C：ACK-1" class="headerlink" title="第二次挥手：S→C：ACK&#x3D;1"></a>第二次挥手：S→C：ACK&#x3D;1</h2><p>服务端回复 ACK 确认关闭客户端发送通道，S 进入CLOSE_WAIT；<br>此时服务端仍能向客户端发剩余数据，客户端收到 ACK 进入FIN_WAIT_2。<br>收到关闭请求，我不再收你的数据，但我还有数据可以发给你。</p>
+<h2 id="第三次挥手：S→C：FIN-1"><a href="#第三次挥手：S→C：FIN-1" class="headerlink" title="第三次挥手：S→C：FIN&#x3D;1"></a>第三次挥手：S→C：FIN&#x3D;1</h2><p>服务端数据全部发完，发送 FIN，S 进入LAST_ACK。<br>我的数据发完了，我也要关闭发送。</p>
+<h2 id="第四次挥手：C→S：ACK-1"><a href="#第四次挥手：C→S：ACK-1" class="headerlink" title="第四次挥手：C→S：ACK&#x3D;1"></a>第四次挥手：C→S：ACK&#x3D;1</h2><p>客户端回复 ACK，进入TIME_WAIT（等待 2MSL）；<br>服务端收到 ACK 立刻CLOSED；客户端等待 2MSL 后无报文到达，最终关闭。<br>收到，连接彻底关闭。</p>
+<h1 id="三次握手两次行不行？四次挥手三次行不行？"><a href="#三次握手两次行不行？四次挥手三次行不行？" class="headerlink" title="三次握手两次行不行？四次挥手三次行不行？"></a>三次握手两次行不行？四次挥手三次行不行？</h1><h2 id="一、为什么三次握手不能改成两次？"><a href="#一、为什么三次握手不能改成两次？" class="headerlink" title="一、为什么三次握手不能改成两次？"></a>一、为什么三次握手不能改成两次？</h2><h3 id="两次握手流程（假想）"><a href="#两次握手流程（假想）" class="headerlink" title="两次握手流程（假想）"></a>两次握手流程（假想）</h3><ol>
+<li>客户端发 SYN</li>
+<li>服务端回复 SYN+ACK，连接直接建立</li>
+</ol>
+<h3 id="致命问题：历史滞留-SYN-报文"><a href="#致命问题：历史滞留-SYN-报文" class="headerlink" title="致命问题：历史滞留 SYN 报文"></a>致命问题：历史滞留 SYN 报文</h3><p>客户端之前失效、迟到的<strong>旧SYN包</strong>延迟到达服务器：</p>
+<ul>
+<li>服务器收到SYN → 立马回复SYN+ACK、建立连接、分配端口资源</li>
+<li>客户端早已断开，无视这个ACK，不会收发数据</li>
+<li><strong>服务器一直阻塞占用资源，空等数据，造成资源浪费</strong></li>
+</ul>
+<p>三次握手的作用：<br>客户端第三次ACK用来<strong>确认服务端收到连接</strong>，只有客户端确认后，服务端才正式建连。迟到的旧SYN到达后，客户端不会回复ACK，服务器收不到第三次报文，自动释放连接，避免无效连接。</p>
+<p><strong>两次无法校验客户端是否在线、报文是否过期</strong>。</p>
+<h2 id="二、四次挥手能不能简化成三次？"><a href="#二、四次挥手能不能简化成三次？" class="headerlink" title="二、四次挥手能不能简化成三次？"></a>二、四次挥手能不能简化成三次？</h2><p><strong>特殊场景可以三次，正常大多必须四次</strong><br>TCP是<strong>全双工通信</strong>，收发通道互相独立：A关发通道≠B不能继续发数据。</p>
+<h3 id="1-常规四次（标准情况）"><a href="#1-常规四次（标准情况）" class="headerlink" title="1. 常规四次（标准情况）"></a>1. 常规四次（标准情况）</h3><ol>
+<li>C发FIN（C不再发数据）</li>
+<li>S回ACK（确认收到关闭，S还能继续发剩余数据）</li>
+<li>S数据发完再发FIN（S也不再发数据）</li>
+<li>C回ACK</li>
+</ol>
+<blockquote>
+<p>第2、3步不能合并：中间存在<strong>服务端遗留数据传输时间</strong>，必须分开，所以是4次。</p>
+</blockquote>
+<h3 id="2-可以变成3次挥手的特例"><a href="#2-可以变成3次挥手的特例" class="headerlink" title="2. 可以变成3次挥手的特例"></a>2. 可以变成3次挥手的特例</h3><p><strong>服务端收到FIN时，恰好数据全部发送完毕</strong>：<br>服务端可以把「ACK确认 + FIN关闭」合并成一个报文：</p>
+<ol>
+<li>C→S：FIN</li>
+<li>S→C：ACK+FIN（合并第二条、第三条报文）</li>
+<li>C→S：ACK<br>👉 此时就变成<strong>三次挥手</strong>，属于特例，不是通用规范。</li>
+</ol>
+<h2 id="三、高频面试小结"><a href="#三、高频面试小结" class="headerlink" title="三、高频面试小结"></a>三、高频面试小结</h2><ol>
+<li><strong>握手必须三次，两次绝对不行</strong>：防冗余SYN造成服务端僵死连接。</li>
+<li><strong>挥手默认四次，极端情况三次可行</strong>：只有服务端无剩余数据时才能合并ACK与FIN。</li>
+</ol>
+<h2 id="补充考点：TIME-WAIT为什么必须等2MSL"><a href="#补充考点：TIME-WAIT为什么必须等2MSL" class="headerlink" title="补充考点：TIME-WAIT为什么必须等2MSL"></a>补充考点：TIME-WAIT为什么必须等2MSL</h2><ol>
+<li>保证最后一个ACK丢包时，被动关闭方能重发FIN；</li>
+<li>等待网络中旧报文全部过期，避免新连接收到历史残包。</li>
+</ol>
+<h1 id="WebSocket-vs-HTTP"><a href="#WebSocket-vs-HTTP" class="headerlink" title="WebSocket vs HTTP"></a>WebSocket vs HTTP</h1><h2 id="1-连接模型本质"><a href="#1-连接模型本质" class="headerlink" title="1. 连接模型本质"></a>1. 连接模型本质</h2><h3 id="HTTP：短连接-一问一答（单向）"><a href="#HTTP：短连接-一问一答（单向）" class="headerlink" title="HTTP：短连接 &#x2F; 一问一答（单向）"></a>HTTP：短连接 &#x2F; 一问一答（单向）</h3><ul>
+<li><strong>请求→响应，连接用完就断</strong>（HTTP1.1长连接只是复用TCP，依旧一问一答）</li>
+<li><strong>只能客户端主动发请求，服务器不能主动推送数据</strong></li>
+</ul>
+<h3 id="WebSocket：长连接全双工"><a href="#WebSocket：长连接全双工" class="headerlink" title="WebSocket：长连接全双工"></a>WebSocket：长连接全双工</h3><ul>
+<li>先通过<strong>一次HTTP握手</strong>升级协议，后续全程复用同一条TCP连接</li>
+<li><strong>客户端、服务端任意一方随时主动发消息</strong>（服务端可主动推送）</li>
+</ul>
+<h2 id="2-通信流程"><a href="#2-通信流程" class="headerlink" title="2. 通信流程"></a>2. 通信流程</h2><ol>
+<li><p><strong>HTTP</strong><br>客户端发请求 → 服务器返回数据 → TCP断开&#x2F;闲置断开<br>实时场景（聊天、推送）只能用<strong>轮询&#x2F;长轮询</strong>，频繁发HTTP请求，开销大。</p>
+</li>
+<li><p><strong>WebSocket</strong><br>① 客户端发<code>HTTP GET</code>带升级头（<code>Upgrade:websocket</code>）握手<br>② 服务端返回101 Switching Protocols，协议切换成功<br>③ <strong>之后全双工二进制&#x2F;文本传输，不再走HTTP协议</strong></p>
+</li>
+</ol>
+<h2 id="3-头部开销"><a href="#3-头部开销" class="headerlink" title="3. 头部开销"></a>3. 头部开销</h2><ul>
+<li>HTTP：每次请求都带 Cookie、Header，<strong>头部冗余大</strong></li>
+<li>WebSocket：握手后报文头极短（2~10字节），<strong>传输成本极低</strong></li>
+</ul>
+<h2 id="4-适用场景"><a href="#4-适用场景" class="headerlink" title="4. 适用场景"></a>4. 适用场景</h2><h3 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP"></a>HTTP</h3><p>普通接口查询、静态资源下载、表单提交（<strong>一次性请求</strong>）</p>
+<h3 id="WebSocket"><a href="#WebSocket" class="headerlink" title="WebSocket"></a>WebSocket</h3><p>聊天室、实时大屏、股票行情、IM聊天、设备实时上报（<strong>需要服务端主动推送</strong>）</p>
+<h2 id="5-版本补充"><a href="#5-版本补充" class="headerlink" title="5. 版本补充"></a>5. 版本补充</h2><ul>
+<li>HTTP&#x2F;2 支持服务端推送，但仍是基于请求模型，<strong>做不到任意时刻自由互发消息</strong>，替代不了WS。</li>
+</ul>
+<h1 id="DNS、DHCP、ARP、ICMP-简明区分"><a href="#DNS、DHCP、ARP、ICMP-简明区分" class="headerlink" title="DNS、DHCP、ARP、ICMP 简明区分"></a>DNS、DHCP、ARP、ICMP 简明区分</h1><h2 id="1-ARP（地址解析协议）"><a href="#1-ARP（地址解析协议）" class="headerlink" title="1. ARP（地址解析协议）"></a>1. ARP（地址解析协议）</h2><p><strong>链路层→网络层过渡，局域网内网</strong><br>作用：<strong>IP地址 ↔ MAC地址互相转换</strong></p>
+<ul>
+<li>广播发ARP请求：已知IP，查对方网卡MAC</li>
+<li>单播ARP应答：回复本机MAC<br>工作环境：同一个局域网，跨路由无效。</li>
+</ul>
+<h2 id="2-ICMP（网际控制报文协议）"><a href="#2-ICMP（网际控制报文协议）" class="headerlink" title="2. ICMP（网际控制报文协议）"></a>2. ICMP（网际控制报文协议）</h2><p><strong>网络层协议，依附IP承载</strong><br>作用：<strong>差错报告、网络连通探测</strong><br>典型应用：<code>ping</code>、traceroute（路由追踪）</p>
+<ul>
+<li>目标不可达、超时、路由异常全靠ICMP上报。</li>
+</ul>
+<h2 id="3-DNS（域名系统）"><a href="#3-DNS（域名系统）" class="headerlink" title="3. DNS（域名系统）"></a>3. DNS（域名系统）</h2><p><strong>应用层</strong><br>作用：<strong>域名→IP解析</strong>（<a target="_blank" rel="noopener" href="http://www.baidu.com/">www.baidu.com</a> → 服务器IP）<br>客户端发DNS查询→DNS服务器返回IP，之后才建立TCP连接。</p>
+<h2 id="4-DHCP（动态主机配置协议）"><a href="#4-DHCP（动态主机配置协议）" class="headerlink" title="4. DHCP（动态主机配置协议）"></a>4. DHCP（动态主机配置协议）</h2><p><strong>应用层（UDP 67&#x2F;68端口）</strong><br>作用：<strong>自动给终端分配IP、子网掩码、网关、DNS地址</strong><br>四步流程：<code>DISCOVER→OFFER→REQUEST→ACK</code><br>电脑插网线自动拿IP就是DHCP。</p>
+<h2 id="层级"><a href="#层级" class="headerlink" title="层级"></a>层级</h2><ul>
+<li>二层附近：<strong>ARP</strong></li>
+<li>网络层：<strong>ICMP</strong></li>
+<li>应用层：<strong>DHCP、DNS</strong></li>
+</ul>
+<h1 id="sync-map-底层"><a href="#sync-map-底层" class="headerlink" title="sync.map 底层"></a>sync.map 底层</h1><p>type Map struct {<br> mu Mutex          &#x2F;&#x2F; 互斥锁，仅保护 dirty  map<br> read atomic.Value  &#x2F;&#x2F; 只读 map（readOnly 结构体），无锁访问<br> dirty map[any]*entry  &#x2F;&#x2F; 脏 map，包含最新数据，需要加锁访问<br> misses int         &#x2F;&#x2F; 读未命中计数器，触发 dirty 升级为 read<br>}</p>
+<p>type readOnly struct {<br> m       map[any]*entry<br> amended bool &#x2F;&#x2F; true：dirty 有 read 没有的新数据<br>}</p>
+<h1 id="协程泄露"><a href="#协程泄露" class="headerlink" title="协程泄露"></a>协程泄露</h1><p>启动了一个 goroutine，但它永远无法退出、一直存活在后台，占用内存和资源不释放 </p>
+<h1 id="redis防止雪崩"><a href="#redis防止雪崩" class="headerlink" title="redis防止雪崩"></a>redis防止雪崩</h1><p>设置 TTL 时在基础过期时间上 + [1~30min]随机秒数，打散过期高峰，避免同一批淘汰<br>永不过期策略<br>热点数据不设置过期时间，靠主动更新 &#x2F; 淘汰机制淘汰。<br>定时任务主动刷新热点缓存<br>在缓存过期前，后台异步主动更新缓存，避免过期空窗。<br>高可用架构：主从 + 哨兵 Sentinel &#x2F; Redis Cluster 集群<br>主节点挂了自动故障切换，从顶替上位，缓存不整体瘫痪。<br>多级缓存（本地缓存 Caffeine&#x2F;Guava + Redis）<br>应用 JVM 本地缓存做兜底，Redis 崩了优先走本地缓存，不会直达 DB。<br>限流 + 熔断 + 降级（Sentinel、Resilience4j）<br>限流：限制落到 DB 的 QPS<br>熔断：DB 压力过大直接熔断，返回兜底数据，不再查库<br>降级：非核心接口直接返回默认值<br>DB 层：分库分表、连接池限流<br>数据库连接池设合理最大值，防止连接被打满。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://pooiwoop-github-io.pages.dev">皖月清风</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://pooiwoop-github-io.pages.dev/2026/06/06/260606/">https://pooiwoop-github-io.pages.dev/2026/06/06/260606/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://pooiwoop-github-io.pages.dev" target="_blank">皖月清风的个人博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/HTTPS/">HTTPS</a><a class="post-meta__tags" href="/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C/">计算机网络</a><a class="post-meta__tags" href="/tags/TCP-IP/">TCP/IP</a><a class="post-meta__tags" href="/tags/HTTP/">HTTP</a><a class="post-meta__tags" href="/tags/DNS/">DNS</a><a class="post-meta__tags" href="/tags/DHCP/">DHCP</a><a class="post-meta__tags" href="/tags/ARP/">ARP</a><a class="post-meta__tags" href="/tags/ICMP/">ICMP</a></div><div class="post-share"><div class="social-share" data-image="/img/2026/20260323-180427.012-16.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/butterfly-extsrc/1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdnjs.cloudflare.com/ajax/libs/butterfly-extsrc/1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/06/05/260605/" title="Go网页抓取，爬虫相关复习"><img class="cover" src="/img/2026/20260323-180427.012-12.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Go网页抓取，爬虫相关复习</div></div><div class="info-2"><div class="info-item-1">获取网页内容1234567891011121314151617181920212223242526272829303132package mainimport (	&quot;fmt&quot;	&quot;io&quot;	&quot;net/http&quot;)func main() &#123;	// 目标网址	url := &quot;https://httpbin.org/get&quot;	// 发送 GET 请求	resp, err := http.Get(url)	if err != nil &#123;		fmt.Println(&quot;请求失败:&quot;, err)		return	&#125;	// 必须关闭响应体，防止内存泄漏	defer resp.Body.Close()	// 读取响应内容	body, err := io.ReadAll(resp.Body)	if err != nil &#123;		fmt.Println(&quot;读取内容失败:&quot;, err)		return	&#125;	// 输出网页内容	fmt.Prin...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/04/01/260401/" title="260401笔记"><img class="cover" src="/img/7ff84c885b2fdb45d7faee23e82371261035330202.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-04-01</div><div class="info-item-2">260401笔记</div></div><div class="info-2"><div class="info-item-1">重定向和请求转发重定向是服务器返回 3xx 让浏览器重新访问新 URL（地址栏会改变，需二次请求），而请求转发只在同一服务器内部把同一 request 转给其他资源处理（一次请求，地址栏不变）。 Elasticsearch相关Elasticsearch：擅长“模糊”和“相关性”搜索。例如：搜索“苹果手机”，它不仅能找到包含“苹果”和“手机”的商品，还能通过算法智能地判断出“iPhone”、“iOS设备”的相关性，并按照相关度高低返回结果。这是因为它底层使用了倒排索引 这种神奇的数据结构。 倒排索引（Inverted Index）一句话：把“文档→关键词”反过来，变成“关键词→文档”，用来做快速搜索。  1. 它是什么？正常存储是：  文档1：我喜欢苹果 文档2：苹果很好吃  倒排索引就是反过来：  苹果 → 文档1、文档2 喜欢 → 文档1 好吃 → 文档2  这样搜“苹果”，直接就能拿到所有包含它的文档，不用全文扫一遍。  2. 核心结构一般包含两部分：  词典（Term Dictionary）所有关键词的集合：苹果、喜欢、好吃…… 倒排表（Posting List）每个词对应...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">皖月清风</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">28</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">45</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/pooi-woop"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://space.bilibili.com/444943062" target="_blank" title="哔哩哔哩(皖月清风)"><i class="fab fa-bilibili" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://space.bilibili.com/2059784457" target="_blank" title="哔哩哔哩(Pooi)"><i class="fas fa-play" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://github.com/pooi-woop" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://www.xiaoheihe.cn/app/user/profile/89276699" target="_blank" title="小黑盒"><i class="fas fa-gamepad" style="color: #00a1d6;"></i></a><a class="social-icon" href="mailto:1960583030@qq.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://steamcommunity.com/profiles/76561198984384066/" target="_blank" title="Steam"><i class="fab fa-steam" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://www.mfuns.net/member/32698" target="_blank" title="喵御宅"><i class="fas fa-cat" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://tieba.baidu.com/home/main?id=tb.1.3a262b89.IwcgVsMq1NwbQUKrazsfTg&amp;fr=userbar" target="_blank" title="百度贴吧"><i class="fas fa-comments" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://music.163.com/#/user/home?id=1359234587" target="_blank" title="网易云音乐"><i class="fas fa-music" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://www.douyin.com/user/MS4wLjABAAAAlK-w0K6GoHT6CzVvfomyhJZoal1ljhvlJieh4u1CsBGAdM2dW_Z3h6SaFK4IanSm?from_tab_name=main" target="_blank" title="抖音"><i class="fab fa-tiktok" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://leetcode.cn/u/woop-r/" target="_blank" title="LeetCode"><i class="fas fa-code" style="color: #00a1d6;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到清风的个人博客！</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%87%87%E9%9B%86%E6%8F%92%E4%BB%B6%E9%9C%80%E8%A6%81%E5%A2%9E%E9%87%8F%E9%87%87%E9%9B%86%EF%BC%8C%E9%81%BF%E5%85%8D%E9%87%8D%E5%A4%8D%E6%8A%93%E5%8F%96%E3%80%81%E9%87%8D%E5%A4%8D%E5%85%A5%E5%BA%93%E3%80%81%E6%B5%AA%E8%B4%B9%E6%80%A7%E8%83%BD%EF%BC%8C%E4%BD%A0%E5%9C%A8-Go-%E9%87%8C%E6%80%8E%E4%B9%88%E5%81%9A%E5%8E%BB%E9%87%8D%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">采集插件需要增量采集，避免重复抓取、重复入库、浪费性能，你在 Go 里怎么做去重？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B%EF%BC%9A%E6%96%AD%E5%BC%80-TCP-%E8%BF%9E%E6%8E%A5%EF%BC%88%E5%85%A8%E5%8F%8C%E5%B7%A5%EF%BC%8C%E4%B8%A4%E7%AB%AF%E5%8F%AF%E5%8D%95%E7%8B%AC%E5%85%B3%E5%8F%91%E9%80%81%EF%BC%89"><span class="toc-number">2.</span> <span class="toc-text">四次挥手：断开 TCP 连接（全双工，两端可单独关发送）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E6%AC%A1%E6%8C%A5%E6%89%8B%EF%BC%9AC%E2%86%92S%EF%BC%9AFIN-1"><span class="toc-number">2.1.</span> <span class="toc-text">第一次挥手：C→S：FIN&#x3D;1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E6%AC%A1%E6%8C%A5%E6%89%8B%EF%BC%9AS%E2%86%92C%EF%BC%9AACK-1"><span class="toc-number">2.2.</span> <span class="toc-text">第二次挥手：S→C：ACK&#x3D;1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E6%AC%A1%E6%8C%A5%E6%89%8B%EF%BC%9AS%E2%86%92C%EF%BC%9AFIN-1"><span class="toc-number">2.3.</span> <span class="toc-text">第三次挥手：S→C：FIN&#x3D;1</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B%EF%BC%9AC%E2%86%92S%EF%BC%9AACK-1"><span class="toc-number">2.4.</span> <span class="toc-text">第四次挥手：C→S：ACK&#x3D;1</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B%E4%B8%A4%E6%AC%A1%E8%A1%8C%E4%B8%8D%E8%A1%8C%EF%BC%9F%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B%E4%B8%89%E6%AC%A1%E8%A1%8C%E4%B8%8D%E8%A1%8C%EF%BC%9F"><span class="toc-number">3.</span> <span class="toc-text">三次握手两次行不行？四次挥手三次行不行？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B%E4%B8%8D%E8%83%BD%E6%94%B9%E6%88%90%E4%B8%A4%E6%AC%A1%EF%BC%9F"><span class="toc-number">3.1.</span> <span class="toc-text">一、为什么三次握手不能改成两次？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%A4%E6%AC%A1%E6%8F%A1%E6%89%8B%E6%B5%81%E7%A8%8B%EF%BC%88%E5%81%87%E6%83%B3%EF%BC%89"><span class="toc-number">3.1.1.</span> <span class="toc-text">两次握手流程（假想）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%B4%E5%91%BD%E9%97%AE%E9%A2%98%EF%BC%9A%E5%8E%86%E5%8F%B2%E6%BB%9E%E7%95%99-SYN-%E6%8A%A5%E6%96%87"><span class="toc-number">3.1.2.</span> <span class="toc-text">致命问题：历史滞留 SYN 报文</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B%E8%83%BD%E4%B8%8D%E8%83%BD%E7%AE%80%E5%8C%96%E6%88%90%E4%B8%89%E6%AC%A1%EF%BC%9F"><span class="toc-number">3.2.</span> <span class="toc-text">二、四次挥手能不能简化成三次？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%B8%B8%E8%A7%84%E5%9B%9B%E6%AC%A1%EF%BC%88%E6%A0%87%E5%87%86%E6%83%85%E5%86%B5%EF%BC%89"><span class="toc-number">3.2.1.</span> <span class="toc-text">1. 常规四次（标准情况）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%8F%AF%E4%BB%A5%E5%8F%98%E6%88%903%E6%AC%A1%E6%8C%A5%E6%89%8B%E7%9A%84%E7%89%B9%E4%BE%8B"><span class="toc-number">3.2.2.</span> <span class="toc-text">2. 可以变成3次挥手的特例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E5%B0%8F%E7%BB%93"><span class="toc-number">3.3.</span> <span class="toc-text">三、高频面试小结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A1%A5%E5%85%85%E8%80%83%E7%82%B9%EF%BC%9ATIME-WAIT%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BF%85%E9%A1%BB%E7%AD%892MSL"><span class="toc-number">3.4.</span> <span class="toc-text">补充考点：TIME-WAIT为什么必须等2MSL</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#WebSocket-vs-HTTP"><span class="toc-number">4.</span> <span class="toc-text">WebSocket vs HTTP</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E8%BF%9E%E6%8E%A5%E6%A8%A1%E5%9E%8B%E6%9C%AC%E8%B4%A8"><span class="toc-number">4.1.</span> <span class="toc-text">1. 连接模型本质</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HTTP%EF%BC%9A%E7%9F%AD%E8%BF%9E%E6%8E%A5-%E4%B8%80%E9%97%AE%E4%B8%80%E7%AD%94%EF%BC%88%E5%8D%95%E5%90%91%EF%BC%89"><span class="toc-number">4.1.1.</span> <span class="toc-text">HTTP：短连接 &#x2F; 一问一答（单向）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#WebSocket%EF%BC%9A%E9%95%BF%E8%BF%9E%E6%8E%A5%E5%85%A8%E5%8F%8C%E5%B7%A5"><span class="toc-number">4.1.2.</span> <span class="toc-text">WebSocket：长连接全双工</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E9%80%9A%E4%BF%A1%E6%B5%81%E7%A8%8B"><span class="toc-number">4.2.</span> <span class="toc-text">2. 通信流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%A4%B4%E9%83%A8%E5%BC%80%E9%94%80"><span class="toc-number">4.3.</span> <span class="toc-text">3. 头部开销</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">4.4.</span> <span class="toc-text">4. 适用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HTTP"><span class="toc-number">4.4.1.</span> <span class="toc-text">HTTP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#WebSocket"><span class="toc-number">4.4.2.</span> <span class="toc-text">WebSocket</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E7%89%88%E6%9C%AC%E8%A1%A5%E5%85%85"><span class="toc-number">4.5.</span> <span class="toc-text">5. 版本补充</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#DNS%E3%80%81DHCP%E3%80%81ARP%E3%80%81ICMP-%E7%AE%80%E6%98%8E%E5%8C%BA%E5%88%86"><span class="toc-number">5.</span> <span class="toc-text">DNS、DHCP、ARP、ICMP 简明区分</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-ARP%EF%BC%88%E5%9C%B0%E5%9D%80%E8%A7%A3%E6%9E%90%E5%8D%8F%E8%AE%AE%EF%BC%89"><span class="toc-number">5.1.</span> <span class="toc-text">1. ARP（地址解析协议）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-ICMP%EF%BC%88%E7%BD%91%E9%99%85%E6%8E%A7%E5%88%B6%E6%8A%A5%E6%96%87%E5%8D%8F%E8%AE%AE%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">2. ICMP（网际控制报文协议）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-DNS%EF%BC%88%E5%9F%9F%E5%90%8D%E7%B3%BB%E7%BB%9F%EF%BC%89"><span class="toc-number">5.3.</span> <span class="toc-text">3. DNS（域名系统）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-DHCP%EF%BC%88%E5%8A%A8%E6%80%81%E4%B8%BB%E6%9C%BA%E9%85%8D%E7%BD%AE%E5%8D%8F%E8%AE%AE%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">4. DHCP（动态主机配置协议）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B1%82%E7%BA%A7"><span class="toc-number">5.5.</span> <span class="toc-text">层级</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#sync-map-%E5%BA%95%E5%B1%82"><span class="toc-number">6.</span> <span class="toc-text">sync.map 底层</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%8F%E7%A8%8B%E6%B3%84%E9%9C%B2"><span class="toc-number">7.</span> <span class="toc-text">协程泄露</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#redis%E9%98%B2%E6%AD%A2%E9%9B%AA%E5%B4%A9"><span class="toc-number">8.</span> <span class="toc-text">redis防止雪崩</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/06/06/260606/" title="计算机网络相关八股复习"><img src="/img/2026/20260323-180427.012-16.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="计算机网络相关八股复习"/></a><div class="content"><a class="title" href="/2026/06/06/260606/" title="计算机网络相关八股复习">计算机网络相关八股复习</a><time datetime="2026-06-06T04:45:34.000Z" title="发表于 2026-06-06 12:45:34">2026-06-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/05/260605/" title="Go网页抓取，爬虫相关复习"><img src="/img/2026/20260323-180427.012-12.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Go网页抓取，爬虫相关复习"/></a><div class="content"><a class="title" href="/2026/06/05/260605/" title="Go网页抓取，爬虫相关复习">Go网页抓取，爬虫相关复习</a><time datetime="2026-06-05T14:39:37.000Z" title="发表于 2026-06-05 22:39:37">2026-06-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/05/28/20260528/" title="Go底层八股笔记"><img src="/img/2026/09a50b243bc714ed50cb35aa3e495a98478921174.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Go底层八股笔记"/></a><div class="content"><a class="title" href="/2026/05/28/20260528/" title="Go底层八股笔记">Go底层八股笔记</a><time datetime="2026-05-28T00:36:01.000Z" title="发表于 2026-05-28 08:36:01">2026-05-28</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/05/15/260515%E7%AC%94%E8%AE%B0/" title="260515笔记"><img src="/img/2026/20260323-180427.012-8.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="260515笔记"/></a><div class="content"><a class="title" href="/2026/05/15/260515%E7%AC%94%E8%AE%B0/" title="260515笔记">260515笔记</a><time datetime="2026-05-15T03:05:18.000Z" title="发表于 2026-05-15 11:05:18">2026-05-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/04/30/260430/" title="后端开发专有名字记忆（20260430笔记）"><img src="/img/2026/9cd2990091a190dbeb53180842432c043546594806860148.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="后端开发专有名字记忆（20260430笔记）"/></a><div class="content"><a class="title" href="/2026/04/30/260430/" title="后端开发专有名字记忆（20260430笔记）">后端开发专有名字记忆（20260430笔记）</a><time datetime="2026-04-30T00:27:50.000Z" title="发表于 2026-04-30 08:27:50">2026-04-30</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/2026/20260323-180427.012-4.jpg);"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 皖月清风</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"lang":"zh-CN","loading":"lazy","inputPosition":"top"}
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'pooi-woop/pooiwoop',
+      'data-repo-id': 'R_kgDORqG0YQ',
+      'data-category-id': 'DIC_kwDORqG0Yc4C4qyU',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>
