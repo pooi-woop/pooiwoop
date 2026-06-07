@@ -4316,7 +4316,7 @@ figure.highlight pre .javascript .function {
 }
 #page-header #site-title {
   margin: 0;
-  color: var(--white);
+  color: rgba(255,255,255,0.6);
   font-size: 1.85em;
   -webkit-line-clamp: 3;
 }
