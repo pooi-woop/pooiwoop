@@ -6324,6 +6324,158 @@ timestamp:受时区影响，相对时间，占4个字节，自动更新
 <li><strong>可观测性</strong><br>全链路 callback：加载&#x2F;切分&#x2F;嵌入&#x2F;检索&#x2F;生成的耗时、错误、日志</li>
 </ol>
 <hr>
+<h1 id="ES替换milvus"><a href="#ES替换milvus" class="headerlink" title="ES替换milvus"></a>ES替换milvus</h1><p><strong>Eino 原生支持 ES 做 Indexer&#x2F;Retriever，替换 Milvus 很方便</strong><br><strong>可以，但要看数据规模与性能诉求；Eino 原生支持 ES 做 Indexer&#x2F;Retriever，替换 Milvus 很方便</strong>。下面分：能不能换、差别在哪、Eino 怎么用 ES、什么时候不建议换。</p>
+<hr>
+<h2 id="一、能不能直接替换？"><a href="#一、能不能直接替换？" class="headerlink" title="一、能不能直接替换？"></a>一、能不能直接替换？</h2><p><strong>能</strong>：</p>
+<ul>
+<li>Elasticsearch 8.x 原生支持 <code>dense_vector</code> + HNSW，可存向量、做 ANN 相似性检索。</li>
+<li><strong>Eino 官方提供 ES7&#x2F;ES8 的 Indexer 和 Retriever 组件</strong>，和 Milvus 一样是标准接口，上层 RAG 链路不用改。</li>
+<li>一句话：<strong>Milvus ↔ ES，在 Eino 里只是换个 Indexer&#x2F;Retriever 实现</strong>。</li>
+</ul>
+<hr>
+<h2 id="二、Milvus-vs-ES：核心差别（决定你能不能换）"><a href="#二、Milvus-vs-ES：核心差别（决定你能不能换）" class="headerlink" title="二、Milvus vs ES：核心差别（决定你能不能换）"></a>二、Milvus vs ES：核心差别（决定你能不能换）</h2><h3 id="1）定位不同"><a href="#1）定位不同" class="headerlink" title="1）定位不同"></a>1）定位不同</h3><ul>
+<li><strong>Milvus</strong>：<strong>专用向量数据库</strong>，为高维向量相似搜索而生（C++ 内核）。</li>
+<li><strong>ES</strong>：<strong>全文搜索引擎+向量扩展</strong>（Java&#x2F;Lucene），主打文本检索，向量是附加能力。</li>
+</ul>
+<h3 id="2）性能差距（关键）"><a href="#2）性能差距（关键）" class="headerlink" title="2）性能差距（关键）"></a>2）性能差距（关键）</h3><ul>
+<li><strong>小数据（&lt;10w）</strong>：ES 够用，延迟差不大。</li>
+<li><strong>大数据（&gt;10w，尤其百万&#x2F;亿级）</strong>：<ul>
+<li>Milvus：P99 延迟 <strong>50–150ms</strong>，QPS 高 4–5 倍。</li>
+<li>ES：P99 <strong>200–500ms</strong>，数据越大慢得越明显（可慢 3–10 倍）。</li>
+<li>原因：ES 向量索引基于 Lucene，JVM 内存开销大、优化不如专用库。</li>
+</ul>
+</li>
+</ul>
+<h3 id="3）资源开销"><a href="#3）资源开销" class="headerlink" title="3）资源开销"></a>3）资源开销</h3><ul>
+<li>Milvus：内存效率高，IVF_PQ 压缩可省 <strong>70–80%</strong> 存储。</li>
+<li>ES：吃内存&#x2F;CPU 多，堆内存、GC 调优成本高。</li>
+</ul>
+<h3 id="4）混合检索能力（ES-强项）"><a href="#4）混合检索能力（ES-强项）" class="headerlink" title="4）混合检索能力（ES 强项）"></a>4）混合检索能力（ES 强项）</h3><ul>
+<li>ES：<strong>向量+关键词+过滤+聚合</strong> 一锅搞定，比如：<br><code>(向量相似) AND (title:Go) AND (date:2026)</code>。</li>
+<li>Milvus：也支持过滤，但<strong>文本关键词能力远不如 ES</strong>。</li>
+</ul>
+<h3 id="5）Eino-支持度"><a href="#5）Eino-支持度" class="headerlink" title="5）Eino 支持度"></a>5）Eino 支持度</h3><ul>
+<li>两者都支持：<ul>
+<li>Indexer：<code>milvus</code> &#x2F; <code>es7</code> &#x2F; <code>es8</code>。</li>
+<li>Retriever：<code>milvus</code> &#x2F; <code>es7</code> &#x2F; <code>es8</code>。</li>
+</ul>
+</li>
+<li>切换成本：<strong>改初始化代码，RAG 链路（Loader→Splitter→Embedder→LLM）完全不动</strong>。</li>
+</ul>
+<hr>
+<h2 id="三、Eino-里用-ES-做-RAG（可直接跑）"><a href="#三、Eino-里用-ES-做-RAG（可直接跑）" class="headerlink" title="三、Eino 里用 ES 做 RAG（可直接跑）"></a>三、Eino 里用 ES 做 RAG（可直接跑）</h2><h3 id="1）ES-准备（建-index-与-mapping）"><a href="#1）ES-准备（建-index-与-mapping）" class="headerlink" title="1）ES 准备（建 index 与 mapping）"></a>1）ES 准备（建 index 与 mapping）</h3><figure class="highlight http"><table><tr><td class="code"><pre><span class="line">PUT /eino_rag</span><br><span class="line">&#123;</span><br><span class="line">  &quot;mappings&quot;: &#123;</span><br><span class="line">    &quot;properties&quot;: &#123;</span><br><span class="line">      &quot;content&quot;: &#123; &quot;type&quot;: &quot;text&quot; &#125;,</span><br><span class="line">      &quot;meta&quot;: &#123; &quot;type&quot;: &quot;object&quot; &#125;,</span><br><span class="line">      &quot;content_vector&quot;: &#123;</span><br><span class="line">        &quot;type&quot;: &quot;dense_vector&quot;,</span><br><span class="line">        &quot;dims&quot;: 1536,   // 适配 OpenAI 1536维</span><br><span class="line">        &quot;index&quot;: true,</span><br><span class="line">        &quot;similarity&quot;: &quot;cosine&quot;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2）Eino-初始化-ES-Indexer-Retriever"><a href="#2）Eino-初始化-ES-Indexer-Retriever" class="headerlink" title="2）Eino 初始化 ES Indexer&#x2F;Retriever"></a>2）Eino 初始化 ES Indexer&#x2F;Retriever</h3><figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">    <span class="string">&quot;context&quot;</span></span><br><span class="line">    <span class="string">&quot;github.com/Cloudtogo/eino-ext/components/indexer/es8&quot;</span></span><br><span class="line">    <span class="string">&quot;github.com/Cloudtogo/eino-ext/components/retriever/es8&quot;</span></span><br><span class="line">    <span class="string">&quot;github.com/Cloudtogo/eino-ext/components/retriever/es8/search_mode&quot;</span></span><br><span class="line">    <span class="string">&quot;github.com/elastic/go-elasticsearch/v8&quot;</span></span><br><span class="line">    <span class="string">&quot;github.com/Cloudtogo/eino/embedding&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">    ctx := context.Background()</span><br><span class="line">    <span class="comment">// 1. ES 客户端</span></span><br><span class="line">    esCfg := elasticsearch.Config&#123;</span><br><span class="line">        Addresses: []<span class="type">string</span>&#123;<span class="string">&quot;http://localhost:9200&quot;</span>&#125;,</span><br><span class="line">        Username:  <span class="string">&quot;elastic&quot;</span>,</span><br><span class="line">        Password:  <span class="string">&quot;xxx&quot;</span>,</span><br><span class="line">    &#125;</span><br><span class="line">    esClient, _ := elasticsearch.NewClient(esCfg)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 2. 嵌入模型（和 Milvus 时一样）</span></span><br><span class="line">    embedder, _ := openai.NewEmbedder(openai.WithAPIKey(<span class="string">&quot;sk-xxx&quot;</span>))</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 3. ES Indexer（入库用）</span></span><br><span class="line">    idx, _ := es8.NewIndexer(ctx, &amp;es8.IndexerConfig&#123;</span><br><span class="line">        Client:    esClient,</span><br><span class="line">        Index:     <span class="string">&quot;eino_rag&quot;</span>,</span><br><span class="line">        Embedding: embedder,</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 4. ES Retriever（检索用）</span></span><br><span class="line">    ret, _ := es8.NewRetriever(ctx, &amp;es8.RetrieverConfig&#123;</span><br><span class="line">        Client:     esClient,</span><br><span class="line">        Index:      <span class="string">&quot;eino_rag&quot;</span>,</span><br><span class="line">        TopK:       <span class="number">3</span>,</span><br><span class="line">        Embedding:  embedder,</span><br><span class="line">        SearchMode: search_mode.DenseVectorSimilarity(search_mode.Cosine, <span class="string">&quot;content_vector&quot;</span>),</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 后续：建库、检索、拼 prompt、LLM 生成</span></span><br><span class="line">    <span class="comment">// 和用 Milvus 时完全一样！</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="四、什么时候可以换-ES？什么时候别换？"><a href="#四、什么时候可以换-ES？什么时候别换？" class="headerlink" title="四、什么时候可以换 ES？什么时候别换？"></a>四、什么时候可以换 ES？什么时候别换？</h2><h3 id="✅-推荐用-ES-替换-Milvus"><a href="#✅-推荐用-ES-替换-Milvus" class="headerlink" title="✅ 推荐用 ES 替换 Milvus"></a>✅ 推荐用 ES 替换 Milvus</h3><ol>
+<li><strong>数据量小</strong>（&lt;10w 条），追求简单、不想部署 Milvus；</li>
+<li><strong>强混合检索</strong>：既要向量语义，又要关键词&#x2F;过滤&#x2F;聚合；</li>
+<li><strong>已有 ES 集群</strong>，不想额外维护 Milvus；</li>
+<li><strong>RAG 以文本检索为主、向量为辅</strong>。</li>
+</ol>
+<h3 id="❌-不推荐换（坚持-Milvus）"><a href="#❌-不推荐换（坚持-Milvus）" class="headerlink" title="❌ 不推荐换（坚持 Milvus）"></a>❌ 不推荐换（坚持 Milvus）</h3><ol>
+<li><strong>数据量大</strong>（&gt;10w，尤其百万&#x2F;亿级），要低延迟、高 QPS；</li>
+<li><strong>纯向量检索</strong>，追求极致性能与低成本；</li>
+<li><strong>生产高并发 RAG</strong>，对延迟敏感（如在线客服）。</li>
+</ol>
+<hr>
 ]]></content>
+      <tags>
+        <tag>Redis</tag>
+        <tag>简历</tag>
+        <tag>MySQL</tag>
+        <tag>MQ</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Agent开发相关八股</title>
+    <url>/2026/06/09/20260609/</url>
+    <content><![CDATA[<h1 id="RAG召回常见问题"><a href="#RAG召回常见问题" class="headerlink" title="RAG召回常见问题"></a>RAG召回常见问题</h1><p>。</p>
+<hr>
+<h2 id="一、RAG召回最常遇到的6类问题"><a href="#一、RAG召回最常遇到的6类问题" class="headerlink" title="一、RAG召回最常遇到的6类问题"></a>一、RAG召回最常遇到的6类问题</h2><h3 id="1-语义不匹配（最常见）"><a href="#1-语义不匹配（最常见）" class="headerlink" title="1. 语义不匹配（最常见）"></a>1. 语义不匹配（最常见）</h3><p>用户提问是自然语言，库中文档是关键词&#x2F;专业表述，<strong>字面不匹配、语义匹配</strong>，导致召回不到正确文档。<br>例：</p>
+<ul>
+<li>用户问：“电脑连不上网怎么办”</li>
+<li>库中是：“以太网连接故障排查”<br>→ 传统关键词检索完全搜不到。</li>
+</ul>
+<h3 id="2-召回噪声大（无关内容多）"><a href="#2-召回噪声大（无关内容多）" class="headerlink" title="2. 召回噪声大（无关内容多）"></a>2. 召回噪声大（无关内容多）</h3><p>召回了一堆不相关的片段，大模型被干扰，回答跑偏、 hallucination（幻觉）。</p>
+<h3 id="3-召回不完整（漏关键信息）"><a href="#3-召回不完整（漏关键信息）" class="headerlink" title="3. 召回不完整（漏关键信息）"></a>3. 召回不完整（漏关键信息）</h3><p>长文档被切分后，<strong>上下文断裂</strong>，只召回碎片，缺关键前提&#x2F;结论。</p>
+<h3 id="4-向量漂移-过时"><a href="#4-向量漂移-过时" class="headerlink" title="4. 向量漂移&#x2F;过时"></a>4. 向量漂移&#x2F;过时</h3><p>文档更新后向量没重算，旧向量和新内容不匹配；高频更新场景尤其严重。</p>
+<h3 id="5-检索速度慢"><a href="#5-检索速度慢" class="headerlink" title="5. 检索速度慢"></a>5. 检索速度慢</h3><p>数据量大（10w+文档）时，暴力检索&#x2F;全量相似度计算耗时高。</p>
+<h3 id="6-多路召回融合差"><a href="#6-多路召回融合差" class="headerlink" title="6. 多路召回融合差"></a>6. 多路召回融合差</h3><p>同时用关键词+向量+规则召回，结果权重混乱，最终质量不稳定。</p>
+<hr>
+<h2 id="二、Go-语言如何处理这些问题"><a href="#二、Go-语言如何处理这些问题" class="headerlink" title="二、Go 语言如何处理这些问题"></a>二、Go 语言如何处理这些问题</h2><p>Go 适合做 RAG 召回层：<strong>高性能、并发强、内存占用低</strong>，非常适合企业级服务。</p>
+<hr>
+<h3 id="问题1：语义不匹配"><a href="#问题1：语义不匹配" class="headerlink" title="问题1：语义不匹配"></a>问题1：语义不匹配</h3><p><strong>Go 解决方案</strong>：<br>使用<strong>嵌入模型（Embedding）<strong>生成向量，用</strong>向量数据库</strong>做相似度检索。</p>
+<p><strong>Go 常用栈</strong></p>
+<ul>
+<li>嵌入：<code>github.com/liukanshan/go-embedding</code> &#x2F; 调用本地 Ollama &#x2F; 通义千问&#x2F;文心一言API</li>
+<li>向量库：<strong>Milvus</strong>（Go SDK）、<strong>Chroma</strong>、<strong>Pinecone</strong></li>
+<li>相似度：余弦相似度</li>
+</ul>
+<p><strong>Go 极简示例（向量召回）</strong></p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;context&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;github.com/milvus-io/milvus-sdk-go/v2/client&quot;</span></span><br><span class="line">	<span class="string">&quot;github.com/milvus-io/milvus-sdk-go/v2/entity&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 向量检索：解决语义不匹配</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">vectorSearch</span><span class="params">(queryEmbedding []<span class="type">float32</span>)</span></span> ([]<span class="type">string</span>, <span class="type">error</span>) &#123;</span><br><span class="line">	<span class="comment">// 1. 连接 Milvus 向量库</span></span><br><span class="line">	c, err := client.NewGrpcClient(context.Background(), <span class="string">&quot;localhost:19530&quot;</span>)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">defer</span> c.Close()</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 2. 构建检索参数</span></span><br><span class="line">	searchParam := entity.NewIndexFlatSearchParam(<span class="number">10</span>)</span><br><span class="line">	vectors := []entity.Vector&#123;entity.FloatVector(queryEmbedding)&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 3. 执行语义检索</span></span><br><span class="line">	result, err := c.Search(</span><br><span class="line">		context.Background(),</span><br><span class="line">		<span class="string">&quot;rag_collection&quot;</span>,  <span class="comment">// 集合名</span></span><br><span class="line">		<span class="string">&quot;&quot;</span>,                 <span class="comment">// 分区</span></span><br><span class="line">		[]<span class="type">string</span>&#123;<span class="string">&quot;content&quot;</span>&#125;,<span class="comment">// 要返回的字段</span></span><br><span class="line">		<span class="string">&quot;&quot;</span>,                 <span class="comment">// 过滤条件</span></span><br><span class="line">		vectors,            <span class="comment">// 用户问题向量</span></span><br><span class="line">		<span class="string">&quot;vector&quot;</span>,           <span class="comment">// 向量字段</span></span><br><span class="line">		entity.COSINE,      <span class="comment">// 余弦相似度</span></span><br><span class="line">		<span class="number">5</span>,                  <span class="comment">// 召回 top5</span></span><br><span class="line">		searchParam,</span><br><span class="line">	)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 4. 解析结果</span></span><br><span class="line">	<span class="keyword">var</span> docs []<span class="type">string</span></span><br><span class="line">	<span class="keyword">for</span> _, rs := <span class="keyword">range</span> result &#123;</span><br><span class="line">		<span class="keyword">for</span> _, field := <span class="keyword">range</span> rs.Fields &#123;</span><br><span class="line">			<span class="keyword">if</span> field.Name == <span class="string">&quot;content&quot;</span> &#123;</span><br><span class="line">				docs = <span class="built_in">append</span>(docs, field.Values.([]<span class="type">string</span>)...)</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> docs, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="问题2：召回噪声大（无关内容）"><a href="#问题2：召回噪声大（无关内容）" class="headerlink" title="问题2：召回噪声大（无关内容）"></a>问题2：召回噪声大（无关内容）</h3><p><strong>Go 解决方案</strong>：</p>
+<ol>
+<li><strong>多路召回 + 重排序（Rerank）</strong></li>
+<li><strong>相似度阈值过滤</strong></li>
+<li><strong>元数据过滤（Metadata Filtering）</strong></li>
+</ol>
+<p><strong>Go 实现：阈值过滤 + Rerank</strong></p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 对召回结果做重排序 &amp; 过滤噪声</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">rerankAndFilter</span><span class="params">(query <span class="type">string</span>, docs []<span class="type">string</span>, threshold <span class="type">float64</span>)</span></span> []<span class="type">string</span> &#123;</span><br><span class="line">	<span class="keyword">var</span> filtered []<span class="type">string</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> _, doc := <span class="keyword">range</span> docs &#123;</span><br><span class="line">		<span class="comment">// 计算 query 与 doc 的相似度（可调用 embedding 模型）</span></span><br><span class="line">		score := computeSimilarity(query, doc)</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 低于阈值直接丢弃（去噪）</span></span><br><span class="line">		<span class="keyword">if</span> score &gt;= threshold &#123;</span><br><span class="line">			filtered = <span class="built_in">append</span>(filtered, doc)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 按分数排序</span></span><br><span class="line">	sort.Slice(filtered, <span class="function"><span class="keyword">func</span><span class="params">(i, j <span class="type">int</span>)</span></span> <span class="type">bool</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> computeSimilarity(query, filtered[i]) &gt; computeSimilarity(query, filtered[j])</span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> filtered</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>企业级方案</strong>：<br>使用 bge-rerank &#x2F; Cohere Rerank 模型，Go 直接调用 API 做二次精排。</p>
+<hr>
+<h3 id="问题3：召回不完整（上下文断裂）"><a href="#问题3：召回不完整（上下文断裂）" class="headerlink" title="问题3：召回不完整（上下文断裂）"></a>问题3：召回不完整（上下文断裂）</h3><p><strong>Go 解决方案</strong>：</p>
+<ol>
+<li><strong>智能分块（Smart Chunking）</strong>：按段落&#x2F;标题&#x2F;语义切分，不硬切固定长度</li>
+<li><strong>窗口召回</strong>：召回目标块的<strong>上一块 + 下一块</strong>，补全上下文</li>
+</ol>
+<p><strong>Go 智能分块示例</strong></p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 按段落切分，避免句子被截断</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">chunkByParagraph</span><span class="params">(text <span class="type">string</span>)</span></span> []<span class="type">string</span> &#123;</span><br><span class="line">	<span class="comment">// 按换行/空行分段</span></span><br><span class="line">	paragraphs := regexp.MustCompile(<span class="string">`\n\s*\n`</span>).Split(text, <span class="number">-1</span>)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 过滤空段</span></span><br><span class="line">	<span class="keyword">var</span> chunks []<span class="type">string</span></span><br><span class="line">	<span class="keyword">for</span> _, p := <span class="keyword">range</span> paragraphs &#123;</span><br><span class="line">		trimmed := strings.TrimSpace(p)</span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">len</span>(trimmed) &gt; <span class="number">0</span> &#123;</span><br><span class="line">			chunks = <span class="built_in">append</span>(chunks, trimmed)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> chunks</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="问题4：向量漂移、数据过时"><a href="#问题4：向量漂移、数据过时" class="headerlink" title="问题4：向量漂移、数据过时"></a>问题4：向量漂移、数据过时</h3><p><strong>Go 解决方案</strong>：</p>
+<ol>
+<li><strong>增量更新向量</strong></li>
+<li><strong>文档哈希校验</strong>：内容变了才重新生成向量</li>
+<li><strong>定时任务更新</strong>：Go 原生 <code>time/ticker</code> 做定时刷新</li>
+</ol>
+<p><strong>Go 增量更新向量</strong></p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 只有文档内容变化时，才重新生成向量</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">updateEmbeddingIfNeeded</span><span class="params">(docID <span class="type">string</span>, content <span class="type">string</span>)</span></span> <span class="type">error</span> &#123;</span><br><span class="line">	<span class="comment">// 1. 计算内容哈希</span></span><br><span class="line">	hash := sha256.Sum256([]<span class="type">byte</span>(content))</span><br><span class="line">	hashStr := fmt.Sprintf(<span class="string">&quot;%x&quot;</span>, hash)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 2. 查询数据库中旧哈希</span></span><br><span class="line">	oldHash, err := getDocHashFromDB(docID)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 3. 没变就跳过</span></span><br><span class="line">	<span class="keyword">if</span> hashStr == oldHash &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 4. 变了 → 重新生成向量并更新</span></span><br><span class="line">	emb, err := generateEmbedding(content)</span><br><span class="line">	<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> err</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> saveEmbeddingToMilvus(docID, emb, hashStr)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="问题5：检索速度慢"><a href="#问题5：检索速度慢" class="headerlink" title="问题5：检索速度慢"></a>问题5：检索速度慢</h3><p><strong>Go 解决方案</strong>：</p>
+<ol>
+<li><strong>向量库建索引</strong>（IVF_FLAT &#x2F; HNSW）</li>
+<li><strong>Go 并发预处理</strong>：嵌入、检索并发执行</li>
+<li><strong>内存缓存</strong>：热点 Query 缓存召回结果</li>
+</ol>
+<p><strong>Go 并发生成嵌入（提速）</strong></p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 并发生成文档向量，大幅提速</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">batchGenerateEmbeddings</span><span class="params">(docs []<span class="type">string</span>)</span></span> ([][]<span class="type">float32</span>, <span class="type">error</span>) &#123;</span><br><span class="line">	ch := <span class="built_in">make</span>(<span class="keyword">chan</span> []<span class="type">float32</span>, <span class="built_in">len</span>(docs))</span><br><span class="line">	errCh := <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="type">error</span>, <span class="built_in">len</span>(docs))</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 并发请求</span></span><br><span class="line">	<span class="keyword">for</span> _, doc := <span class="keyword">range</span> docs &#123;</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(d <span class="type">string</span>)</span></span> &#123;</span><br><span class="line">			emb, err := callEmbeddingAPI(d)</span><br><span class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">				errCh &lt;- err</span><br><span class="line">				<span class="keyword">return</span></span><br><span class="line">			&#125;</span><br><span class="line">			ch &lt;- emb</span><br><span class="line">		&#125;(doc)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 收集结果</span></span><br><span class="line">	<span class="keyword">var</span> embeddings [][]<span class="type">float32</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="built_in">len</span>(docs); i++ &#123;</span><br><span class="line">		<span class="keyword">select</span> &#123;</span><br><span class="line">		<span class="keyword">case</span> emb := &lt;-ch:</span><br><span class="line">			embeddings = <span class="built_in">append</span>(embeddings, emb)</span><br><span class="line">		<span class="keyword">case</span> err := &lt;-errCh:</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nil</span>, err</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> embeddings, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="问题6：多路召回融合差"><a href="#问题6：多路召回融合差" class="headerlink" title="问题6：多路召回融合差"></a>问题6：多路召回融合差</h3><p><strong>Go 解决方案</strong>：</p>
+<ul>
+<li>向量召回（语义）</li>
+<li>关键词召回（BM25）</li>
+<li>元数据过滤（权限、分类、时间）</li>
+<li><strong>加权融合（RRF 算法）</strong></li>
+</ul>
+<p>Go 非常适合做多路召回的<strong>调度层</strong>。</p>
+<p><strong>RRF 融合公式（Go 实现）</strong></p>
+<figure class="highlight go"><table><tr><td class="code"><pre><span class="line"><span class="comment">// RRF 召回结果融合（最稳定的多路融合算法）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">rrfFuse</span><span class="params">(ranks ...[]<span class="type">string</span>)</span></span> []<span class="type">string</span> &#123;</span><br><span class="line">	score := <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="type">string</span>]<span class="type">float64</span>)</span><br><span class="line">	<span class="keyword">const</span> k = <span class="number">60</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> _, rank := <span class="keyword">range</span> ranks &#123;</span><br><span class="line">		<span class="keyword">for</span> i, doc := <span class="keyword">range</span> rank &#123;</span><br><span class="line">			score[doc] += <span class="number">1.0</span> / (<span class="type">float64</span>(i+<span class="number">1</span>) + k)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 按总分排序</span></span><br><span class="line">	<span class="keyword">type</span> pair <span class="keyword">struct</span> &#123;</span><br><span class="line">		doc   <span class="type">string</span></span><br><span class="line">		score <span class="type">float64</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">var</span> pairs []pair</span><br><span class="line">	<span class="keyword">for</span> d, s := <span class="keyword">range</span> score &#123;</span><br><span class="line">		pairs = <span class="built_in">append</span>(pairs, pair&#123;d, s&#125;)</span><br><span class="line">	&#125;</span><br><span class="line">	sort.Slice(pairs, <span class="function"><span class="keyword">func</span><span class="params">(i, j <span class="type">int</span>)</span></span> <span class="type">bool</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> pairs[i].score &gt; pairs[j].score</span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> res []<span class="type">string</span></span><br><span class="line">	<span class="keyword">for</span> _, p := <span class="keyword">range</span> pairs &#123;</span><br><span class="line">		res = <span class="built_in">append</span>(res, p.doc)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> res</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、总结"><a href="#三、总结" class="headerlink" title="三、总结"></a>三、总结</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">嵌入模型：Ollama (bge-small) / 云厂商API</span><br><span class="line">向量数据库：Milvus（Go SDK 最完善）</span><br><span class="line">关键词检索：Bleve（Go 原生 BM25）</span><br><span class="line">重排序：bge-rerank-large</span><br><span class="line">缓存：Redis / 内存LRU</span><br><span class="line">调度：Go 原生并发 + 协程</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="纯向量的问题？"><a href="#纯向量的问题？" class="headerlink" title="纯向量的问题？"></a>纯向量的问题？</h1><p>纯向量：容易漏招、错招（比如用户搜 “TCP 三次握手”，向量可能召回 “UDP 连接”）<br>工业级 RAG 标准做法：向量（Dense）+ 关键词（Sparse&#x2F;BM25）多路召回 + RRF 融合<br>【RRF &#x3D; Reciprocal Rank Fusion，倒数排名融合，是 RAG 里最常用、实现最简单、效果稳定的多路召回结果合并算法。】<br>MySQL 现在自带 BM25 + 全文检索，功能足够覆盖 RAG 召回。</p>
+]]></content>
+      <tags>
+        <tag>Agent开发</tag>
+      </tags>
   </entry>
 </search>
