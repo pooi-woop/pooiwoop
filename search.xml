@@ -5128,7 +5128,6 @@ timestamp:受时区影响，相对时间，占4个字节，自动更新
 <h1 id="Transport应该全局单例"><a href="#Transport应该全局单例" class="headerlink" title="Transport应该全局单例"></a>Transport应该全局单例</h1><p>你问到了<strong>爬虫&#x2F;接口请求最核心的痛点</strong>！</p>
 <p>我直接给你<strong>Go 里处理 JS 渲染、异步加载页面的所有实战方案</strong>，从简单到强大，<strong>你直接复制就能用</strong>。</p>
 <hr>
-<h1 id="一句话先说结论"><a href="#一句话先说结论" class="headerlink" title="一句话先说结论"></a>一句话先说结论</h1><p><strong>普通 http.Client 只能拿 HTML 源码，拿不到 JS 跑出来的数据。<br>要拿动态数据，必须用“能执行 JS 的浏览器内核”。</strong></p>
 <hr>
 <h1 id="遇到-JS-渲染、异步加载的页面，直接用-http-Client-拿不到数据"><a href="#遇到-JS-渲染、异步加载的页面，直接用-http-Client-拿不到数据" class="headerlink" title="遇到 JS 渲染、异步加载的页面，直接用 http.Client 拿不到数据"></a>遇到 JS 渲染、异步加载的页面，直接用 http.Client 拿不到数据</h1><h2 id="方案-1：抓真实异步接口（最推荐、最快、最稳）"><a href="#方案-1：抓真实异步接口（最推荐、最快、最稳）" class="headerlink" title="方案 1：抓真实异步接口（最推荐、最快、最稳）"></a>方案 1：抓真实异步接口（最推荐、最快、最稳）</h2><p>99% 的异步加载页面，数据都是通过 <strong>XHR &#x2F; Fetch</strong> 接口加载的。</p>
 <h3 id="怎么做："><a href="#怎么做：" class="headerlink" title="怎么做："></a>怎么做：</h3><ol>
