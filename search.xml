@@ -6621,5 +6621,182 @@ timestamp:受时区影响，相对时间，占4个字节，自动更新
 </ol>
 <h1 id="回表查询"><a href="#回表查询" class="headerlink" title="回表查询"></a>回表查询</h1><p>普通索引 只存 索引列的值 + 主键 ID<br>你查询时，数据库先在索引树找到目标数据的主键 ID<br>然后拿着这个 ID 去聚簇索引（原表数据） 查一遍，拿到完整行数据<br>第 3 步就是回表</p>
 ]]></content>
+      <tags>
+        <tag>-八股</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>前端相关八股</title>
+    <url>/2026/06/11/20260611/</url>
+    <content><![CDATA[<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>短轮询</th>
+<th>长轮询</th>
+<th>SSE</th>
+<th>WebSocket</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>通信方向</td>
+<td>单向 (客户端拉)</td>
+<td>单向 (客户端拉)</td>
+<td>单向 (服务端推)</td>
+<td>双向互发</td>
+</tr>
+<tr>
+<td>底层协议</td>
+<td>HTTP</td>
+<td>HTTP</td>
+<td>HTTP</td>
+<td>TCP(WS&#x2F;WSS)</td>
+</tr>
+<tr>
+<td>连接类型</td>
+<td>短连接</td>
+<td>挂起 HTTP</td>
+<td>HTTP 长连接</td>
+<td>TCP 长连接</td>
+</tr>
+<tr>
+<td>浏览器原生 API</td>
+<td>无 (ajax&#x2F;fetch)</td>
+<td>无 (ajax)</td>
+<td>EventSource</td>
+<td>WebSocket</td>
+</tr>
+<tr>
+<td>自动重连</td>
+<td>需手动实现</td>
+<td>需手动</td>
+<td>内置自动重连</td>
+<td>需手动</td>
+</tr>
+<tr>
+<td>消息格式</td>
+<td>任意</td>
+<td>任意</td>
+<td>固定 SSE 格式</td>
+<td>任意</td>
+</tr>
+<tr>
+<td>二进制数据</td>
+<td>支持</td>
+<td>支持</td>
+<td>不友好</td>
+<td>完美支持</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>低频、简单拉取</td>
+<td>准实时、简单通知</td>
+<td>纯服务端推送</td>
+<td>双向实时交互</td>
+</tr>
+</tbody></table>
+<h1 id="借助-CSS-resize-属性，浏览器原生支持右下角拖拽拉伸。"><a href="#借助-CSS-resize-属性，浏览器原生支持右下角拖拽拉伸。" class="headerlink" title="借助 CSS resize 属性，浏览器原生支持右下角拖拽拉伸。"></a>借助 CSS resize 属性，浏览器原生支持右下角拖拽拉伸。</h1><h1 id="通过鼠标按下状态结合-transform-可实现简易拖拽体验"><a href="#通过鼠标按下状态结合-transform-可实现简易拖拽体验" class="headerlink" title="通过鼠标按下状态结合 transform 可实现简易拖拽体验"></a>通过鼠标按下状态结合 transform 可实现简易拖拽体验</h1><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">&quot;zh-CN&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">title</span>&gt;</span>CSS 模拟拖拽移动<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">style</span>&gt;</span><span class="language-css"></span></span><br><span class="line"><span class="language-css">    <span class="selector-class">.drag-move</span> &#123;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">width</span>: <span class="number">160px</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">height</span>: <span class="number">100px</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">line-height</span>: <span class="number">100px</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">text-align</span>: center;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">background</span>: <span class="number">#67c23a</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">color</span>: <span class="number">#fff</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">border-radius</span>: <span class="number">6px</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">cursor</span>: grab; <span class="comment">/* 鼠标手型 */</span></span></span><br><span class="line"><span class="language-css">      <span class="attribute">transition</span>: transform <span class="number">0.1s</span> ease;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">user-select</span>: none;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">position</span>: relative;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">left</span>: <span class="number">50px</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">top</span>: <span class="number">50px</span>;</span></span><br><span class="line"><span class="language-css">    &#125;</span></span><br><span class="line"><span class="language-css">    <span class="comment">/* 鼠标按住时，模拟拖拽偏移 */</span></span></span><br><span class="line"><span class="language-css">    <span class="selector-class">.drag-move</span><span class="selector-pseudo">:active</span> &#123;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">cursor</span>: grabbing;</span></span><br><span class="line"><span class="language-css">      <span class="comment">/* 简易拖拽偏移，可自行调整数值 */</span></span></span><br><span class="line"><span class="language-css">      <span class="attribute">transform</span>: <span class="built_in">translate</span>(<span class="number">20px</span>, <span class="number">20px</span>);</span></span><br><span class="line"><span class="language-css">    &#125;</span></span><br><span class="line"><span class="language-css">  </span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;drag-move&quot;</span>&gt;</span>按住拖动<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h1 id="CSS-盒模型"><a href="#CSS-盒模型" class="headerlink" title="CSS 盒模型"></a>CSS 盒模型</h1><p>所有 HTML 元素都可看作<strong>矩形盒子</strong>，盒模型决定元素尺寸、边距、布局，分<strong>标准盒模型</strong>和 <strong>IE 怪异盒模型</strong>。</p>
+<h2 id="一、盒子组成（四层结构）"><a href="#一、盒子组成（四层结构）" class="headerlink" title="一、盒子组成（四层结构）"></a>一、盒子组成（四层结构）</h2><p>从外到内依次：</p>
+<ol>
+<li><strong>margin 外边距</strong>：盒子与其他元素的距离，透明</li>
+<li><strong>border 边框</strong>：盒子边界，可见样式</li>
+<li><strong>padding 内边距</strong>：内容与边框之间的距离，继承背景色</li>
+<li><strong>content 内容区</strong>：文字、图片等实际内容</li>
+</ol>
+<h2 id="二、两种盒模型核心区别"><a href="#二、两种盒模型核心区别" class="headerlink" title="二、两种盒模型核心区别"></a>二、两种盒模型核心区别</h2><p>由 <code>box-sizing</code> 属性控制，<strong>计算公式不同</strong></p>
+<h3 id="1-标准盒模型（默认）"><a href="#1-标准盒模型（默认）" class="headerlink" title="1. 标准盒模型（默认）"></a>1. 标准盒模型（默认）</h3><p><code>box-sizing: content-box;</code></p>
+<ul>
+<li>元素<strong>实际宽度</strong> &#x3D; <code>width</code>(内容) + padding + border</li>
+<li><code>width/height</code> 仅设置<strong>内容区</strong>大小</li>
+</ul>
+<p>公式：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">总宽度 = width + padding-left + padding-right + border-left + border-right</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-IE-怪异盒模型（常用）"><a href="#2-IE-怪异盒模型（常用）" class="headerlink" title="2. IE 怪异盒模型（常用）"></a>2. IE 怪异盒模型（常用）</h3><p><code>box-sizing: border-box;</code></p>
+<ul>
+<li>元素<strong>实际宽度</strong> &#x3D; 设定的 <code>width</code></li>
+<li><code>width/height</code> 包含：内容 + padding + border</li>
+</ul>
+<p>公式：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">内容宽度 = width - padding - border</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>现代开发<strong>统一推荐 border-box</strong>，改 padding&#x2F;border 不会撑大盒子，布局更可控。</p>
+</blockquote>
+<h2 id="三、属性用法"><a href="#三、属性用法" class="headerlink" title="三、属性用法"></a>三、属性用法</h2><h3 id="1-margin-外边距"><a href="#1-margin-外边距" class="headerlink" title="1. margin 外边距"></a>1. margin 外边距</h3><figure class="highlight css"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* 四个值：上 右 下 左 */</span></span><br><span class="line"><span class="attribute">margin</span>: <span class="number">10px</span> <span class="number">20px</span> <span class="number">10px</span> <span class="number">20px</span>;</span><br><span class="line"><span class="comment">/* 两个值：上下  左右 */</span></span><br><span class="line"><span class="attribute">margin</span>: <span class="number">10px</span> <span class="number">20px</span>;</span><br><span class="line"><span class="comment">/* 一个值：四边相同 */</span></span><br><span class="line"><span class="attribute">margin</span>: <span class="number">10px</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 单独方向 */</span></span><br><span class="line"><span class="attribute">margin-top</span>: <span class="number">10px</span>;</span><br><span class="line"><span class="attribute">margin-right</span>: <span class="number">20px</span>;</span><br><span class="line"><span class="attribute">margin-bottom</span>: <span class="number">10px</span>;</span><br><span class="line"><span class="attribute">margin-left</span>: <span class="number">20px</span>;</span><br></pre></td></tr></table></figure>
+<p><strong>特性</strong>：</p>
+<ul>
+<li>垂直方向 <code>margin 会合并</code>（相邻块级元素上下边距取最大值）</li>
+<li><code>margin: 0 auto;</code> 可实现<strong>块级元素水平居中</strong></li>
+</ul>
+<h3 id="2-padding-内边距"><a href="#2-padding-内边距" class="headerlink" title="2. padding 内边距"></a>2. padding 内边距</h3><p>写法同 margin，<strong>不能为负值</strong>，背景会延伸到 padding 区域。</p>
+<figure class="highlight css"><table><tr><td class="code"><pre><span class="line"><span class="attribute">padding</span>: <span class="number">10px</span>;</span><br><span class="line"><span class="attribute">padding</span>: <span class="number">5px</span> <span class="number">15px</span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-border-边框"><a href="#3-border-边框" class="headerlink" title="3. border 边框"></a>3. border 边框</h3><figure class="highlight css"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* 宽度 样式 颜色 */</span></span><br><span class="line"><span class="attribute">border</span>: <span class="number">2px</span> solid <span class="number">#333</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 单独设置 */</span></span><br><span class="line"><span class="attribute">border-width</span>: <span class="number">2px</span>;</span><br><span class="line"><span class="attribute">border-style</span>: solid; <span class="comment">/* solid 实线 / dashed 虚线 / dotted 点线 */</span></span><br><span class="line"><span class="attribute">border-color</span>: <span class="number">#000</span>;</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、完整示例"><a href="#四、完整示例" class="headerlink" title="四、完整示例"></a>四、完整示例</h2><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">style</span>&gt;</span><span class="language-css"></span></span><br><span class="line"><span class="language-css">    <span class="selector-class">.box1</span> &#123;</span></span><br><span class="line"><span class="language-css">      <span class="comment">/* 标准盒模型（默认） */</span></span></span><br><span class="line"><span class="language-css">      <span class="attribute">box-sizing</span>: content-box;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">width</span>: <span class="number">200px</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">padding</span>: <span class="number">20px</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">border</span>: <span class="number">5px</span> solid <span class="number">#f00</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">margin</span>: <span class="number">30px</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">background</span>: <span class="number">#eee</span>;</span></span><br><span class="line"><span class="language-css">    &#125;</span></span><br><span class="line"><span class="language-css"></span></span><br><span class="line"><span class="language-css">    <span class="selector-class">.box2</span> &#123;</span></span><br><span class="line"><span class="language-css">      <span class="comment">/* 怪异盒模型（推荐） */</span></span></span><br><span class="line"><span class="language-css">      <span class="attribute">box-sizing</span>: border-box;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">width</span>: <span class="number">200px</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">padding</span>: <span class="number">20px</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">border</span>: <span class="number">5px</span> solid <span class="number">#00f</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">margin</span>: <span class="number">30px</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">background</span>: <span class="number">#eee</span>;</span></span><br><span class="line"><span class="language-css">    &#125;</span></span><br><span class="line"><span class="language-css">  </span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;box1&quot;</span>&gt;</span>content-box<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;box2&quot;</span>&gt;</span>border-box<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>计算：</p>
+<ul>
+<li>box1 实际宽：<code>200 + 40 + 10 = 250px</code></li>
+<li>box2 实际宽：<code>200px</code></li>
+</ul>
+<h2 id="五、全局统一设置（项目标配）"><a href="#五、全局统一设置（项目标配）" class="headerlink" title="五、全局统一设置（项目标配）"></a>五、全局统一设置（项目标配）</h2><p>所有元素统一使用 <code>border-box</code>，避免布局错乱：</p>
+<figure class="highlight css"><table><tr><td class="code"><pre><span class="line">* &#123;</span><br><span class="line">  <span class="attribute">margin</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">padding</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">box-sizing</span>: border-box;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="六、关键总结"><a href="#六、关键总结" class="headerlink" title="六、关键总结"></a>六、关键总结</h2><ol>
+<li><code>content-box</code>：width &#x3D; 内容宽（默认）</li>
+<li><code>border-box</code>：width &#x3D; 内容+内边距+边框（开发首选）</li>
+<li>margin 透明、可负、会垂直合并；padding 不透明、不可负</li>
+<li>布局优先全局设置 <code>box-sizing: border-box</code></li>
+</ol>
+<h1 id="CSS-实现-0-5px-细线"><a href="#CSS-实现-0-5px-细线" class="headerlink" title="CSS 实现 0.5px 细线"></a>CSS 实现 0.5px 细线</h1><p>原生 <code>border: 0.5px</code> 在部分设备&#x2F;浏览器会被<strong>四舍五入成 1px</strong>，下面是主流兼容方案，按实用优先级排序。</p>
+<hr>
+<h2 id="一、方案1：transform-缩放（最通用、推荐）"><a href="#一、方案1：transform-缩放（最通用、推荐）" class="headerlink" title="一、方案1：transform 缩放（最通用、推荐）"></a>一、方案1：transform 缩放（最通用、推荐）</h2><p>利用 <code>scale(0.5)</code> 压缩 1px 线条，适配所有移动端&#x2F;PC，支持横竖线。</p>
+<h3 id="水平线"><a href="#水平线" class="headerlink" title="水平线"></a>水平线</h3><figure class="highlight css"><table><tr><td class="code"><pre><span class="line"><span class="selector-class">.half-line</span> &#123;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">1px</span>;</span><br><span class="line">  <span class="attribute">background</span>: <span class="number">#333</span>;</span><br><span class="line">  <span class="attribute">transform</span>: <span class="built_in">scaleY</span>(<span class="number">0.5</span>); <span class="comment">/* 垂直缩放一半 */</span></span><br><span class="line">  <span class="attribute">transform-origin</span>: center; <span class="comment">/* 缩放基点，避免偏移 */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="竖直线"><a href="#竖直线" class="headerlink" title="竖直线"></a>竖直线</h3><figure class="highlight css"><table><tr><td class="code"><pre><span class="line"><span class="selector-class">.half-line-v</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">1px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">100px</span>;</span><br><span class="line">  <span class="attribute">background</span>: <span class="number">#333</span>;</span><br><span class="line">  <span class="attribute">transform</span>: <span class="built_in">scaleX</span>(<span class="number">0.5</span>);</span><br><span class="line">  <span class="attribute">transform-origin</span>: center;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="完整示例（分割线）"><a href="#完整示例（分割线）" class="headerlink" title="完整示例（分割线）"></a>完整示例（分割线）</h3><figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;line&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">style</span>&gt;</span><span class="language-css"></span></span><br><span class="line"><span class="language-css"><span class="selector-class">.line</span> &#123;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">width</span>: <span class="number">100%</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">height</span>: <span class="number">1px</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">background</span>: <span class="number">#ccc</span>;</span></span><br><span class="line"><span class="language-css">  <span class="attribute">transform</span>: <span class="built_in">scaleY</span>(<span class="number">0.5</span>);</span></span><br><span class="line"><span class="language-css">  <span class="attribute">transform-origin</span>: <span class="number">0</span> center; <span class="comment">/* 基点左对齐，布局更稳 */</span></span></span><br><span class="line"><span class="language-css">&#125;</span></span><br><span class="line"><span class="language-css"></span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="二、方案2：border-媒体查询（适配高清屏）"><a href="#二、方案2：border-媒体查询（适配高清屏）" class="headerlink" title="二、方案2：border + 媒体查询（适配高清屏）"></a>二、方案2：border + 媒体查询（适配高清屏）</h2><p>区分<strong>设备像素比</strong>，针对 Retina&#x2F;高清屏单独设置 0.5px，普通屏用 1px。</p>
+<figure class="highlight css"><table><tr><td class="code"><pre><span class="line"><span class="selector-class">.line</span> &#123;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">1px</span>;</span><br><span class="line">  <span class="attribute">background</span>: <span class="number">#333</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 2倍屏（主流手机） */</span></span><br><span class="line"><span class="keyword">@media</span> (<span class="attribute">-webkit-min-device-pixel-ratio</span>: <span class="number">2</span>), (<span class="attribute">min-resolution</span>: <span class="number">2dppx</span>) &#123;</span><br><span class="line">  <span class="selector-class">.line</span> &#123;</span><br><span class="line">    <span class="attribute">height</span>: <span class="number">0.5px</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 3倍屏 */</span></span><br><span class="line"><span class="keyword">@media</span> (<span class="attribute">-webkit-min-device-pixel-ratio</span>: <span class="number">3</span>), (<span class="attribute">min-resolution</span>: <span class="number">3dppx</span>) &#123;</span><br><span class="line">  <span class="selector-class">.line</span> &#123;</span><br><span class="line">    <span class="attribute">height</span>: <span class="number">0.333px</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>说明：普通低分辨率屏幕不识别小数像素，自动 fallback 为 1px。</p>
+</blockquote>
+<hr>
+<h2 id="三、方案3：渐变渐变实现（渐变蒙版）"><a href="#三、方案3：渐变渐变实现（渐变蒙版）" class="headerlink" title="三、方案3：渐变渐变实现（渐变蒙版）"></a>三、方案3：渐变渐变实现（渐变蒙版）</h2><p>用线性渐变做出<strong>细线条</strong>，适合做单边分割线，可配合 <code>border</code> 使用。</p>
+<figure class="highlight css"><table><tr><td class="code"><pre><span class="line"><span class="selector-class">.line</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">1px</span>;</span><br><span class="line">  <span class="attribute">background</span>: <span class="built_in">linear-gradient</span>(to right, transparent, <span class="number">#333</span>, transparent);</span><br><span class="line">  <span class="attribute">opacity</span>: <span class="number">0.5</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>特点：视觉上变细，本质还是 1px，靠透明度模拟细线条，适合装饰线。</p>
+<hr>
+<h2 id="四、方案4：伪元素实现（不占用原生布局）"><a href="#四、方案4：伪元素实现（不占用原生布局）" class="headerlink" title="四、方案4：伪元素实现（不占用原生布局）"></a>四、方案4：伪元素实现（不占用原生布局）</h2><p>适合给元素<strong>底部&#x2F;顶部加 0.5px 下划线&#x2F;分割线</strong>，不改动原有结构。</p>
+<figure class="highlight css"><table><tr><td class="code"><pre><span class="line"><span class="selector-class">.box</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: relative;</span><br><span class="line">  <span class="attribute">padding-bottom</span>: <span class="number">10px</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.box</span><span class="selector-pseudo">::after</span> &#123;</span><br><span class="line">  <span class="attribute">content</span>: <span class="string">&#x27;&#x27;</span>;</span><br><span class="line">  <span class="attribute">position</span>: absolute;</span><br><span class="line">  <span class="attribute">left</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">bottom</span>: <span class="number">0</span>;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">1px</span>;</span><br><span class="line">  <span class="attribute">background</span>: <span class="number">#666</span>;</span><br><span class="line">  <span class="attribute">transform</span>: <span class="built_in">scaleY</span>(<span class="number">0.5</span>);</span><br><span class="line">  <span class="attribute">transform-origin</span>: <span class="number">0</span> bottom;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="关键补充-踩坑"><a href="#关键补充-踩坑" class="headerlink" title="关键补充 &amp; 踩坑"></a>关键补充 &amp; 踩坑</h2><ol>
+<li><p><strong>为什么直接写 0.5px 有时无效？</strong><br>浏览器渲染基于<strong>物理像素</strong>，老式屏幕最小单位是 1 物理像素，小数会被取整；高清屏（Retina）1 个 CSS 像素 &#x3D; 2&#x2F;3 物理像素，才支持小数像素。</p>
+</li>
+<li><p><strong>缩放方案偏移问题</strong><br>缩放后线条位置可能偏移，用 <code>transform-origin</code> 修正：</p>
+<ul>
+<li>水平线条：<code>transform-origin: left center</code></li>
+<li>底部下划线：<code>transform-origin: left bottom</code></li>
+</ul>
+</li>
+<li><p><strong>全局通用分割线最简写法（项目常用）</strong></p>
+</li>
+</ol>
+<figure class="highlight css"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* 全局 0.5px 分割线 */</span></span><br><span class="line"><span class="selector-class">.split-line</span> &#123;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">1px</span>;</span><br><span class="line">  <span class="attribute">background-color</span>: <span class="number">#eee</span>;</span><br><span class="line">  <span class="attribute">transform</span>: <span class="built_in">scaleY</span>(<span class="number">0.5</span>);</span><br><span class="line">  <span class="attribute">transform-origin</span>: <span class="number">0</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="选型建议"><a href="#选型建议" class="headerlink" title="选型建议"></a>选型建议</h2><ul>
+<li>移动端&#x2F;H5、需要强兼容：<strong>优先 transform 缩放</strong></li>
+<li>只做高清屏适配、追求原生像素：<strong>设备像素比媒体查询</strong></li>
+<li>仅视觉弱化、装饰线条：<strong>渐变 + 透明度</strong></li>
+</ul>
+]]></content>
+      <tags>
+        <tag>-八股 -前端相关</tag>
+      </tags>
   </entry>
 </search>
