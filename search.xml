@@ -6799,4 +6799,85 @@ timestamp:受时区影响，相对时间，占4个字节，自动更新
         <tag>-八股 -前端相关</tag>
       </tags>
   </entry>
+  <entry>
+    <title>20260612</title>
+    <url>/2026/06/12/20260612/</url>
+    <content><![CDATA[<h1 id="有关扩容，假如在数据量到达阈值时直接开新的哈希表进行扩容，那不会导致那一次的-set-操作用时特别久吗？有什么方案能保证这次-set-不会超时吗？"><a href="#有关扩容，假如在数据量到达阈值时直接开新的哈希表进行扩容，那不会导致那一次的-set-操作用时特别久吗？有什么方案能保证这次-set-不会超时吗？" class="headerlink" title="有关扩容，假如在数据量到达阈值时直接开新的哈希表进行扩容，那不会导致那一次的 set 操作用时特别久吗？有什么方案能保证这次 set 不会超时吗？"></a>有关扩容，假如在数据量到达阈值时直接开新的哈希表进行扩容，那不会导致那一次的 set 操作用时特别久吗？有什么方案能保证这次 set 不会超时吗？</h1><p><strong>一次性全量迁移确实会造成单次 <code>set</code> 卡顿、超时</strong>，业界分「基础扩容」「渐进式扩容」「分片扩容」三类方案解决，以 Java HashMap、Go map、Redis 为例逐一说明。</p>
+<h2 id="一、先讲原生一次性扩容（问题根源）"><a href="#一、先讲原生一次性扩容（问题根源）" class="headerlink" title="一、先讲原生一次性扩容（问题根源）"></a>一、先讲原生一次性扩容（问题根源）</h2><h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><ol>
+<li>元素数量达到<strong>负载因子阈值</strong>（容量 × 负载因子）</li>
+<li>本次 <code>put/set</code> 触发扩容：新建<strong>2倍容量</strong>数组</li>
+<li><strong>一次性遍历原数组所有节点</strong>，重新计算哈希、迁移到新数组</li>
+<li>本次操作结束</li>
+</ol>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><ul>
+<li>数据量越大，迁移耗时越长，<strong>单次请求阻塞</strong>，高并发&#x2F;接口场景极易超时、毛刺严重。</li>
+<li>线程不安全场景下还会引发并发死循环（Java JDK1.7 HashMap 经典问题）。</li>
+</ul>
+<hr>
+<h2 id="二、主流解决方案（按落地场景划分）"><a href="#二、主流解决方案（按落地场景划分）" class="headerlink" title="二、主流解决方案（按落地场景划分）"></a>二、主流解决方案（按落地场景划分）</h2><h3 id="方案1：渐进式扩容（增量迁移，最常用）"><a href="#方案1：渐进式扩容（增量迁移，最常用）" class="headerlink" title="方案1：渐进式扩容（增量迁移，最常用）"></a>方案1：渐进式扩容（增量迁移，最常用）</h3><p><strong>核心思想</strong>：不把所有数据迁移压在一次操作里，<strong>拆分迁移工作量，分摊到后续每一次读写请求</strong>。<br>代表实现：<strong>Java 8 HashMap、Go 内置 map、Redis 哈希结构</strong>。</p>
+<h4 id="执行流程"><a href="#执行流程" class="headerlink" title="执行流程"></a>执行流程</h4><ol>
+<li>触发扩容：新建新数组，<strong>同时保留原数组</strong>，此时哈希表存在<strong>新旧两个数组</strong>。</li>
+<li>标记迁移状态，后续所有 <code>get/put/remove</code> 操作，<strong>顺便搬运原数组当前桶的整条链表&#x2F;树</strong>。</li>
+<li>每次请求只迁移<strong>一个桶</strong>的数据，单次操作耗时极小。</li>
+<li>直到原数组所有桶全部迁移完成，丢弃原数组，扩容结束。</li>
+</ol>
+<h4 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h4><ul>
+<li>单次 <code>set</code> 仅做<strong>少量迁移</strong>，耗时平稳，无长时间阻塞。</li>
+<li>读写请求均匀分摊迁移开销，消除性能毛刺。</li>
+</ul>
+<h4 id="细节补充（Java8-HashMap）"><a href="#细节补充（Java8-HashMap）" class="headerlink" title="细节补充（Java8 HashMap）"></a>细节补充（Java8 HashMap）</h4><ul>
+<li>扩容期间 <code>table</code> 同时指向新旧数组；</li>
+<li>访问旧桶时触发迁移，迁移完该桶就清空旧桶；</li>
+<li>迁移完成后旧数组 GC 回收。</li>
+</ul>
+<hr>
+<h3 id="方案2：预扩容-分批异步迁移（业务层-中间件常用）"><a href="#方案2：预扩容-分批异步迁移（业务层-中间件常用）" class="headerlink" title="方案2：预扩容 + 分批异步迁移（业务层&#x2F;中间件常用）"></a>方案2：预扩容 + 分批异步迁移（业务层&#x2F;中间件常用）</h3><p><strong>核心思想</strong>：提前预判容量，在流量低峰期异步迁移，避开业务高峰。<br>适用：Redis、分布式缓存、业务自研哈希表。</p>
+<ol>
+<li><strong>预扩容</strong><br>监控元素数量，<strong>未到阈值就提前触发扩容</strong>，避免满载时紧急扩容。</li>
+<li><strong>异步后台迁移</strong><br>扩容触发后，启动<strong>后台线程</strong>分批迁移数据，主线程直接响应客户端 <code>set</code> 请求，不阻塞。</li>
+<li>读写路由规则<ul>
+<li>写：优先写入新数组；</li>
+<li>读：先查新数组，找不到再查旧数组；</li>
+<li>后台慢慢把旧数据迁完，最终下线旧数组。</li>
+</ul>
+</li>
+</ol>
+<h4 id="优势-1"><a href="#优势-1" class="headerlink" title="优势"></a>优势</h4><ul>
+<li><strong>主线程完全不卡</strong>，<code>set</code> 几乎零额外耗时，彻底杜绝超时。</li>
+<li>适合高并发在线服务。</li>
+</ul>
+<h4 id="劣势"><a href="#劣势" class="headerlink" title="劣势"></a>劣势</h4><ul>
+<li>同时维护双份数据，<strong>临时占用双倍内存</strong>；</li>
+<li>需处理读写双数组的逻辑，代码复杂度上升。</li>
+</ul>
+<hr>
+<h3 id="方案3：分片哈希（分段锁-分片独立扩容）"><a href="#方案3：分片哈希（分段锁-分片独立扩容）" class="headerlink" title="方案3：分片哈希（分段锁 + 分片独立扩容）"></a>方案3：分片哈希（分段锁 + 分片独立扩容）</h3><p><strong>核心思想</strong>：把一个大哈希表拆成<strong>多个独立小哈希表（分片）</strong>，每个分片单独扩容。<br>代表：<code>ConcurrentHashMap</code>（Java）、分布式哈希表。</p>
+<ol>
+<li>全局哈希表分为 N 个分片，每个分片有独立容量、独立阈值、独立锁。</li>
+<li><strong>单个分片达到阈值，仅对当前分片扩容</strong>，其余分片不受影响。</li>
+<li>扩容只涉及一小部分数据，迁移量极小，单次 <code>set</code> 耗时微乎其微。</li>
+</ol>
+<h4 id="优势-2"><a href="#优势-2" class="headerlink" title="优势"></a>优势</h4><ul>
+<li>扩容粒度极细，不会出现全表大迁移；</li>
+<li>配合分段锁，并发性能优秀。</li>
+</ul>
+<h4 id="延伸：分布式场景"><a href="#延伸：分布式场景" class="headerlink" title="延伸：分布式场景"></a>延伸：分布式场景</h4><p>分布式哈希（一致性哈希）更进一步：扩容只影响少量节点数据，全局无大规模迁移。</p>
+<hr>
+<h3 id="方案4：延迟扩容-动态负载因子（兜底优化）"><a href="#方案4：延迟扩容-动态负载因子（兜底优化）" class="headerlink" title="方案4：延迟扩容 &#x2F; 动态负载因子（兜底优化）"></a>方案4：延迟扩容 &#x2F; 动态负载因子（兜底优化）</h3><ul>
+<li>临时<strong>调高负载因子</strong>，推迟扩容时机，减少扩容频次；</li>
+<li>仅作为辅助手段，不能根治问题，一般搭配上面方案使用。</li>
+</ul>
+<hr>
+<h2 id="三、不同语言-组件实际选型总结"><a href="#三、不同语言-组件实际选型总结" class="headerlink" title="三、不同语言&#x2F;组件实际选型总结"></a>三、不同语言&#x2F;组件实际选型总结</h2><ol>
+<li><strong>Java 8 HashMap</strong>：<strong>渐进式扩容</strong> → 解决单次 put 阻塞，单机普通场景首选。</li>
+<li><strong>Java ConcurrentHashMap</strong>：分片 + 渐进式扩容 → 高并发本地哈希表。</li>
+<li><strong>Go map</strong>：纯渐进式增量迁移 → 语言内置，无明显卡顿。</li>
+<li><strong>Redis</strong>：预扩容 + 后台异步分批迁移 + 双数组读写 → 高并发缓存标准方案。</li>
+<li><strong>自研业务哈希表</strong>：优先「异步后台迁移 + 预扩容」，保证接口响应时间。</li>
+</ol>
+<hr>
+<h2 id="你说异步扩容，那假如正在扩容的时候旧的哈希表被填满了怎么办？"><a href="#你说异步扩容，那假如正在扩容的时候旧的哈希表被填满了怎么办？" class="headerlink" title="你说异步扩容，那假如正在扩容的时候旧的哈希表被填满了怎么办？?"></a>你说异步扩容，那假如正在扩容的时候旧的哈希表被填满了怎么办？?</h2><p>异步扩容会同时存在 旧表 (old_table) + 新表 (new_table) 两张哈希表，状态分为：<br>扩容中：新表已创建，后台线程分批迁移旧表数据；<br>迁移完成：旧表下线，只用新表。<br>核心写策略（通用规则）：<br>所有新写入，一律直接写到新表，不再写入旧表<br>旧表只进不出，只会逐步变少，永远不会被再次填满。</p>
+<h1 id="为什么需要延迟双删"><a href="#为什么需要延迟双删" class="headerlink" title="为什么需要延迟双删"></a>为什么需要延迟双删</h1><p>线程 A 查数据 → 拿到旧缓存 → 线程 B 更新 DB + 删除缓存 → 线程 A 把旧数据写回缓存 → 缓存永久脏数据</p>
+]]></content>
+  </entry>
 </search>
