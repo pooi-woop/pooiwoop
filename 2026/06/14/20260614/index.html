@@ -1,0 +1,425 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>LRU？SingleFlight？Flink？Spark？20260614杂八股 | 皖月清风的个人博客</title><meta name="author" content="皖月清风"><meta name="copyright" content="皖月清风"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="filebeat是beats的一个组件。GMP相关同一时刻：一个 M 只能绑定一个 P，一个 P 也只能被一个 M 使用；生命周期上：M 和 P 不是永久一对一绑定，会因阻塞、抢占、空闲切换动态解绑、重新配对；核心约束：M 执行 G 的前提是临时持有 P，而非终身绑定。 slice 不是线程安全的多个 goroutine 并发读写同一个 slice，一定会出现数据竞争、结果异常、panic。这首歌">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LRU？SingleFlight？Flink？Spark？20260614杂八股">
+<meta property="og:url" content="https://pooiwoop-github-io.pages.dev/2026/06/14/20260614/index.html">
+<meta property="og:site_name" content="皖月清风的个人博客">
+<meta property="og:description" content="filebeat是beats的一个组件。GMP相关同一时刻：一个 M 只能绑定一个 P，一个 P 也只能被一个 M 使用；生命周期上：M 和 P 不是永久一对一绑定，会因阻塞、抢占、空闲切换动态解绑、重新配对；核心约束：M 执行 G 的前提是临时持有 P，而非终身绑定。 slice 不是线程安全的多个 goroutine 并发读写同一个 slice，一定会出现数据竞争、结果异常、panic。这首歌">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pooiwoop-github-io.pages.dev/img/2026/420c9b9f08de31d166af08e1ac974daf3546594806860148.jpg">
+<meta property="article:published_time" content="2026-06-14T03:23:09.000Z">
+<meta property="article:modified_time" content="2026-06-14T12:28:41.846Z">
+<meta property="article:author" content="皖月清风">
+<meta property="article:tag" content="Flink">
+<meta property="article:tag" content="GMP">
+<meta property="article:tag" content="GO">
+<meta property="article:tag" content="Go">
+<meta property="article:tag" content="LRU">
+<meta property="article:tag" content="SingleFlight">
+<meta property="article:tag" content="Spark">
+<meta property="article:tag" content="go">
+<meta property="article:tag" content="redis">
+<meta property="article:tag" content="slice">
+<meta property="article:tag" content="缓存击穿">
+<meta property="article:tag" content="缓存穿透">
+<meta property="article:tag" content="缓存雪崩">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pooiwoop-github-io.pages.dev/img/2026/420c9b9f08de31d166af08e1ac974daf3546594806860148.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "LRU？SingleFlight？Flink？Spark？20260614杂八股",
+  "url": "https://pooiwoop-github-io.pages.dev/2026/06/14/20260614/",
+  "image": "https://pooiwoop-github-io.pages.dev/img/2026/420c9b9f08de31d166af08e1ac974daf3546594806860148.jpg",
+  "datePublished": "2026-06-14T03:23:09.000Z",
+  "dateModified": "2026-06-14T12:28:41.846Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "皖月清风",
+      "url": "https://pooiwoop-github-io.pages.dev"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://pooiwoop-github-io.pages.dev/2026/06/14/20260614/index.html"><link rel="preconnect" href="//cdnjs.cloudflare.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdnjs.cloudflare.com/ajax/libs/egjs-infinitegrid/4.13.0/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'LRU？SingleFlight？Flink？Spark？20260614杂八股',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><style>
+/* 首页标题样式 */
+.index-info .site-title {
+  font-size: 3rem;
+  opacity: 0.5;
+}
+</style>
+<meta name="generator" content="Hexo 8.1.1"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(/img/2026/8c6271da33fe31a39853e3d1198341d23546594806860148.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/butterfly-icon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">64</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/2026/420c9b9f08de31d166af08e1ac974daf3546594806860148.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">皖月清风的个人博客</span></a><a class="nav-page-title" href="/"><span class="site-name">LRU？SingleFlight？Flink？Spark？20260614杂八股</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">LRU？SingleFlight？Flink？Spark？20260614杂八股</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-06-14T03:23:09.000Z" title="发表于 2026-06-14 11:23:09">2026-06-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-06-14T12:28:41.846Z" title="更新于 2026-06-14 20:28:41">2026-06-14</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="filebeat是beats的一个组件。"><a href="#filebeat是beats的一个组件。" class="headerlink" title="filebeat是beats的一个组件。"></a>filebeat是beats的一个组件。</h1><h1 id="GMP相关"><a href="#GMP相关" class="headerlink" title="GMP相关"></a>GMP相关</h1><p>同一时刻：一个 M 只能绑定一个 P，一个 P 也只能被一个 M 使用；<br>生命周期上：M 和 P 不是永久一对一绑定，会因阻塞、抢占、空闲切换动态解绑、重新配对；<br>核心约束：M 执行 G 的前提是临时持有 P，而非终身绑定。</p>
+<h1 id="slice-不是线程安全的"><a href="#slice-不是线程安全的" class="headerlink" title="slice 不是线程安全的"></a>slice 不是线程安全的</h1><p>多个 goroutine 并发读写同一个 slice，一定会出现数据竞争、结果异常、panic。<br>这首歌好听，推荐一下啊<a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1FrLm6yEsV/?spm_id_from=333.1007.tianma.2-3-6.click&vd_source=818f94ff798aa7fbb006f84b2b970091">【ナースロボ＿タイプT】あの会話の覚書【漣音】</a></p>
+<h1 id="redis-排行榜应该用哪个数据结构"><a href="#redis-排行榜应该用哪个数据结构" class="headerlink" title="redis 排行榜应该用哪个数据结构"></a>redis 排行榜应该用哪个数据结构</h1><p>ZSet【有序集合】，天然适配排序、分值、去重、分页、排名查询，是 Redis 做榜单的最优解。<br>元素唯一：成员（member）不可重复，天然防重复上榜<br>按分值排序：根据 score 自动升 &#x2F; 降序排列，对应分数、热度、时间<br>高效排名查询：查询名次、区间分页、查某人排名时间复杂度极低<br>支持分数更新：直接修改 score，集合自动重排</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"># 1. 添加/更新成员分数（上榜/加分）</span><br><span class="line">ZADD rank 99 &quot;user1&quot; 88 &quot;user2&quot;</span><br><span class="line"></span><br><span class="line"># 2. 降序分页查榜单（前10名，从0开始）</span><br><span class="line">ZREVRANGE rank 0 9 WITHSCORES</span><br><span class="line"></span><br><span class="line"># 3. 查询某个用户当前排名（降序名次）</span><br><span class="line">ZREVRANK rank &quot;user1&quot;</span><br><span class="line"></span><br><span class="line"># 4. 增减分数（点赞、积分累加）</span><br><span class="line">ZINCRBY rank 10 &quot;user1&quot;</span><br><span class="line"></span><br><span class="line"># 5. 获取榜单总人数</span><br><span class="line">ZCARD rank</span><br><span class="line"></span><br><span class="line"># 6. 删除下线用户</span><br><span class="line">ZREM rank &quot;user1&quot;</span><br></pre></td></tr></table></figure>
+<h1 id="LRU-详解（最近最少使用）"><a href="#LRU-详解（最近最少使用）" class="headerlink" title="LRU 详解（最近最少使用）"></a>LRU 详解（最近最少使用）</h1><h2 id="一、核心概念"><a href="#一、核心概念" class="headerlink" title="一、核心概念"></a>一、核心概念</h2><p><strong>LRU (Least Recently Used)</strong>：<strong>最近最少使用</strong>缓存淘汰算法。<br>规则：当缓存满了，<strong>优先删掉最久没被使用</strong>的数据。</p>
+<hr>
+<h2 id="二、实现思路（经典组合）"><a href="#二、实现思路（经典组合）" class="headerlink" title="二、实现思路（经典组合）"></a>二、实现思路（经典组合）</h2><p>主流方案：<strong>哈希表 + 双向链表</strong></p>
+<ol>
+<li><strong>双向链表</strong><ul>
+<li>头部：最近使用的数据</li>
+<li>尾部：最久未使用（优先淘汰）</li>
+<li>优势：头尾增删、中间节点移动都是 $O(1)$</li>
+</ul>
+</li>
+<li><strong>哈希表（HashMap）</strong><ul>
+<li>key → 链表节点</li>
+<li>优势：查找节点 $O(1)$</li>
+</ul>
+</li>
+</ol>
+<p><strong>整体时间复杂度</strong>：查、增、删、更新 均为 $O(1)$</p>
+<hr>
+<h2 id="三、操作流程"><a href="#三、操作流程" class="headerlink" title="三、操作流程"></a>三、操作流程</h2><ol>
+<li><strong>访问数据</strong><ul>
+<li>存在：移到链表头部</li>
+<li>不存在：新增节点放头部</li>
+</ul>
+</li>
+<li><strong>缓存已满</strong><ul>
+<li>删除链表尾部节点 + 哈希表对应记录</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="四、Go-极简实现（可直接运行）"><a href="#四、Go-极简实现（可直接运行）" class="headerlink" title="四、Go 极简实现（可直接运行）"></a>四、Go 极简实现（可直接运行）</h2><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;container/list&quot;</span></span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> LRUCache <span class="keyword">struct</span> &#123;</span><br><span class="line">	<span class="built_in">cap</span>  <span class="type">int</span></span><br><span class="line">	data <span class="keyword">map</span>[<span class="type">int</span>]*list.Element</span><br><span class="line">	ll   *list.List</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 链表存储的键值对</span></span><br><span class="line"><span class="keyword">type</span> entry <span class="keyword">struct</span> &#123;</span><br><span class="line">	key, val <span class="type">int</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">NewLRU</span><span class="params">(<span class="built_in">cap</span> <span class="type">int</span>)</span></span> *LRUCache &#123;</span><br><span class="line">	<span class="keyword">return</span> &amp;LRUCache&#123;</span><br><span class="line">		<span class="built_in">cap</span>:  <span class="built_in">cap</span>,</span><br><span class="line">		data: <span class="built_in">make</span>(<span class="keyword">map</span>[<span class="type">int</span>]*list.Element),</span><br><span class="line">		ll:   list.New(),</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Get 获取值</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *LRUCache)</span></span> Get(key <span class="type">int</span>) <span class="type">int</span> &#123;</span><br><span class="line">	ele, ok := l.data[key]</span><br><span class="line">	<span class="keyword">if</span> !ok &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 移到队首（最近使用）</span></span><br><span class="line">	l.ll.MoveToFront(ele)</span><br><span class="line">	<span class="keyword">return</span> ele.Value.(*entry).val</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Put 插入/更新</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(l *LRUCache)</span></span> Put(key, val <span class="type">int</span>) &#123;</span><br><span class="line">	<span class="comment">// 已存在：更新值 + 移队首</span></span><br><span class="line">	<span class="keyword">if</span> ele, ok := l.data[key]; ok &#123;</span><br><span class="line">		ele.Value.(*entry).val = val</span><br><span class="line">		l.ll.MoveToFront(ele)</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 不存在：新建节点</span></span><br><span class="line">	newEle := l.ll.PushFront(&amp;entry&#123;key, val&#125;)</span><br><span class="line">	l.data[key] = newEle</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 超过容量，淘汰尾部</span></span><br><span class="line">	<span class="keyword">if</span> l.ll.Len() &gt; l.<span class="built_in">cap</span> &#123;</span><br><span class="line">		delEle := l.ll.Back()</span><br><span class="line">		l.ll.Remove(delEle)</span><br><span class="line">		<span class="built_in">delete</span>(l.data, delEle.Value.(*entry).key)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	lru := NewLRU(<span class="number">2</span>)</span><br><span class="line">	lru.Put(<span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">	lru.Put(<span class="number">2</span>, <span class="number">2</span>)</span><br><span class="line">	fmt.Println(lru.Get(<span class="number">1</span>)) <span class="comment">// 1</span></span><br><span class="line">	lru.Put(<span class="number">3</span>, <span class="number">3</span>)           <span class="comment">// 淘汰 2</span></span><br><span class="line">	fmt.Println(lru.Get(<span class="number">2</span>)) <span class="comment">// -1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="五、常见变种-对比"><a href="#五、常见变种-对比" class="headerlink" title="五、常见变种 &amp; 对比"></a>五、常见变种 &amp; 对比</h2><ol>
+<li><strong>LRU-K</strong>：访问 K 次才进入热点队列，抵御突发冷热数据</li>
+<li><strong>LFU</strong>：按<strong>访问频次</strong>淘汰（区别：LRU 看时间，LFU 看次数）</li>
+<li><strong>Redis 近似 LRU</strong>：不严格遍历链表，随机采样淘汰，性能更高</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><h3 id="1-哈希表（map）"><a href="#1-哈希表（map）" class="headerlink" title="1. 哈希表（map）"></a>1. 哈希表（map）</h3><p>只负责：快速查找<br>特点：无序，不记录访问顺序<br>能力：给一个 key，<br>O(1)<br> 找到对应的链表节点</p>
+<h3 id="2-双向链表"><a href="#2-双向链表" class="headerlink" title="2. 双向链表"></a>2. 双向链表</h3><p>只负责：维护访问时序（有序）<br>特点：严格有序<br>链表头部：最近刚使用<br>链表尾部：最久没使用（要被淘汰）</p>
+<h1 id="只有-len-s-cap-s-时，再执行-append-才会触发扩容。"><a href="#只有-len-s-cap-s-时，再执行-append-才会触发扩容。" class="headerlink" title="只有 len(s) &#x3D;&#x3D; cap(s) 时，再执行 append 才会触发扩容。"></a>只有 len(s) &#x3D;&#x3D; cap(s) 时，再执行 append 才会触发扩容。</h1><p>len &lt; cap：直接在原底层数组末尾写，不扩容。<br>len &#x3D;&#x3D; cap：再 append → 必须扩容（新数组 + 拷贝）。<br>空切片 s :&#x3D; []int{}：len&#x3D;0, cap&#x3D;0，第一次 append 就扩容（分配 1 个元素空间）。</p>
+<h1 id="预防缓存击穿"><a href="#预防缓存击穿" class="headerlink" title="预防缓存击穿"></a>预防缓存击穿</h1><p>【查询不存在的数据，请求直接越过缓存，全部打到数据库。】<br>空值缓存：查询结果为空，也把 null&#x2F;空对象 写入缓存，设置短过期时间。<br>布隆过滤器：前置拦截不存在的 key，请求根本不进缓存 &#x2F; DB。<br>接口层参数校验：非法 ID、非法参数直接拦截。</p>
+<h1 id="预防缓存穿透"><a href="#预防缓存穿透" class="headerlink" title="预防缓存穿透"></a>预防缓存穿透</h1><p>【热点 Key 突然失效，大量并发请求瞬间全部打到数据库。】<br>互斥锁（分布式锁）：同一 key 只放一个请求去查 DB、更新缓存，其他请求等待。<br>永不过期：热点 Key 逻辑过期（不删缓存，后台异步更新）。<br>缓存过期时间加随机值：打散过期时间，避免集体失效。</p>
+<h1 id="预防缓存雪崩"><a href="#预防缓存雪崩" class="headerlink" title="预防缓存雪崩"></a>预防缓存雪崩</h1><p>【大量缓存 key 集体失效 &#x2F; 缓存服务宕机，所有请求直接涌向 DB。】<br>过期时间加随机偏移，打散失效时间；<br>缓存集群高可用：主从、哨兵、集群，避免单点故障；<br>服务层限流、降级、熔断：兜底保护 DB；<br>多级缓存：本地缓存 + 分布式缓存，层层防护；<br>Redis 持久化：宕机后快速恢复数据。</p>
+<h1 id="SingleFlight（请求合并-单飞模式）"><a href="#SingleFlight（请求合并-单飞模式）" class="headerlink" title="SingleFlight（请求合并&#x2F;单飞模式）"></a>SingleFlight（请求合并&#x2F;单飞模式）</h1><h3 id="一、是什么"><a href="#一、是什么" class="headerlink" title="一、是什么"></a>一、是什么</h3><p><strong>SingleFlight 是 Go 官方扩展库（golang.org&#x2F;x&#x2F;sync&#x2F;singleflight）提供的并发原语</strong>，核心作用：<strong>同一 key 的并发请求只执行 1 次，其余等待并共享结果</strong>，本质是「<strong>请求合并</strong>」而非「互斥锁」。</p>
+<h3 id="二、核心原理（极简版）"><a href="#二、核心原理（极简版）" class="headerlink" title="二、核心原理（极简版）"></a>二、核心原理（极简版）</h3><ol>
+<li><strong>结构体</strong>：<code>Group</code> 内含 <code>mu</code>（互斥锁）+ <code>m</code>（map：key→正在执行的call）。</li>
+<li><strong>执行流程</strong>：<ul>
+<li>N 个 goroutine 同时调用 <code>sg.Do(key, func)</code>。</li>
+<li>第 1 个抢到锁的：发现 key 不存在 → 执行 func（查DB&#x2F;调API）。</li>
+<li>其他 N-1 个：发现 key 已存在 → <strong>阻塞等待</strong>，不执行 func。</li>
+<li>执行完的 goroutine：把结果&#x2F;错误写入，<strong>唤醒所有等待者</strong>，共享同一份结果。</li>
+</ul>
+</li>
+<li><strong>返回值</strong>：<code>(val interface{}, err error, shared bool)</code>，<code>shared=true</code> 表示结果是共享的（非本 goroutine 执行）。</li>
+</ol>
+<h3 id="三、核心作用（面试必背）"><a href="#三、核心作用（面试必背）" class="headerlink" title="三、核心作用（面试必背）"></a>三、核心作用（面试必背）</h3><h4 id="1-防缓存击穿（最常用）"><a href="#1-防缓存击穿（最常用）" class="headerlink" title="1. 防缓存击穿（最常用）"></a>1. 防缓存击穿（最常用）</h4><ul>
+<li>场景：热点 key 过期 → 大量请求同时打 DB。</li>
+<li>SingleFlight：同一 key 只放行 1 个请求查 DB，其他等待 → <strong>DB 压力从 N 降为 1</strong>。</li>
+</ul>
+<h4 id="2-减少重复调用"><a href="#2-减少重复调用" class="headerlink" title="2. 减少重复调用"></a>2. 减少重复调用</h4><ul>
+<li>第三方 API（按次计费）、复杂计算、配置拉取、元数据查询等，<strong>相同输入→相同输出</strong>的高成本操作。</li>
+</ul>
+<h4 id="3-削峰控并发"><a href="#3-削峰控并发" class="headerlink" title="3. 削峰控并发"></a>3. 削峰控并发</h4><ul>
+<li>瞬间高并发接口，合并请求，保护下游服务。</li>
+</ul>
+<h3 id="四、Go-代码示例（直接能用）"><a href="#四、Go-代码示例（直接能用）" class="headerlink" title="四、Go 代码示例（直接能用）"></a>四、Go 代码示例（直接能用）</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">&quot;fmt&quot;</span></span><br><span class="line">	<span class="string">&quot;sync&quot;</span></span><br><span class="line">	<span class="string">&quot;time&quot;</span></span><br><span class="line"></span><br><span class="line">	<span class="string">&quot;golang.org/x/sync/singleflight&quot;</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 模拟：查DB（耗时1秒）</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">queryDB</span><span class="params">(key <span class="type">string</span>)</span></span> (<span class="type">string</span>, <span class="type">error</span>) &#123;</span><br><span class="line">	time.Sleep(<span class="number">1</span> * time.Second) <span class="comment">// 模拟慢查询</span></span><br><span class="line">	fmt.Println(<span class="string">&quot;真实查询DB：&quot;</span>, key)</span><br><span class="line">	<span class="keyword">return</span> <span class="string">&quot;data:&quot;</span> + key, <span class="literal">nil</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> sg singleflight.Group</span><br><span class="line">	<span class="keyword">var</span> wg sync.WaitGroup</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 模拟10个并发请求同一个key</span></span><br><span class="line">	<span class="keyword">for</span> i := <span class="number">0</span>; i &lt; <span class="number">10</span>; i++ &#123;</span><br><span class="line">		wg.Add(<span class="number">1</span>)</span><br><span class="line">		<span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(idx <span class="type">int</span>)</span></span> &#123;</span><br><span class="line">			<span class="keyword">defer</span> wg.Done()</span><br><span class="line">			<span class="comment">// 关键：用同一个key，合并请求</span></span><br><span class="line">			val, err, shared := sg.Do(<span class="string">&quot;hot_key&quot;</span>, <span class="function"><span class="keyword">func</span><span class="params">()</span></span> (<span class="keyword">interface</span>&#123;&#125;, <span class="type">error</span>) &#123;</span><br><span class="line">				<span class="keyword">return</span> queryDB(<span class="string">&quot;hot_key&quot;</span>) <span class="comment">// 只执行1次</span></span><br><span class="line">			&#125;)</span><br><span class="line">			<span class="keyword">if</span> err != <span class="literal">nil</span> &#123;</span><br><span class="line">				fmt.Printf(<span class="string">&quot;请求%d失败：%v\n&quot;</span>, idx, err)</span><br><span class="line">				<span class="keyword">return</span></span><br><span class="line">			&#125;</span><br><span class="line">			fmt.Printf(<span class="string">&quot;请求%d成功：%v，是否共享：%t\n&quot;</span>, idx, val, shared)</span><br><span class="line">		&#125;(i)</span><br><span class="line">	&#125;</span><br><span class="line">	wg.Wait()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>输出</strong>：只会打印 1 次「真实查询DB」，其余 9 个请求直接共享结果。</p>
+<h3 id="五、关键特点（vs-互斥锁）"><a href="#五、关键特点（vs-互斥锁）" class="headerlink" title="五、关键特点（vs 互斥锁）"></a>五、关键特点（vs 互斥锁）</h3><ul>
+<li><strong>互斥锁</strong>：一次一个线程进临界区，<strong>串行执行</strong>，所有请求都要排队。</li>
+<li><strong>SingleFlight</strong>：<strong>只执行1次</strong>，其他等待共享，<strong>并行等待、结果共享</strong>，性能更高。</li>
+</ul>
+<h3 id="六、避坑点（面试高频）"><a href="#六、避坑点（面试高频）" class="headerlink" title="六、避坑点（面试高频）"></a>六、避坑点（面试高频）</h3><ol>
+<li><strong>不是缓存</strong>：不存结果，只合并「缓存未命中→查DB」这一瞬间的请求，<strong>必须配合 Redis 等缓存用</strong>。</li>
+<li><strong>阻塞风险</strong>：如果执行函数卡死&#x2F;慢，所有等待者都会阻塞 → <strong>加超时控制（Do+context）</strong>。</li>
+<li><strong>错误扩散</strong>：执行函数失败，所有等待者都拿到错误 → <strong>做好降级&#x2F;重试</strong>。</li>
+<li><strong>key 设计</strong>：必须精准（如订单ID、用户ID），<strong>不能带随机参数&#x2F;时间戳</strong>，否则合并失效。</li>
+<li><strong>全局复用</strong>：<code>singleflight.Group</code> 要全局单例，否则不同实例无法合并请求。</li>
+</ol>
+<h3 id="七、总结（一句话）"><a href="#七、总结（一句话）" class="headerlink" title="七、总结（一句话）"></a>七、总结（一句话）</h3><p><strong>SingleFlight:同一 key 并发请求合并为 1 次执行，防缓存击穿、降下游压力</strong>。</p>
+<h1 id="Flink-核心速记"><a href="#Flink-核心速记" class="headerlink" title="Flink 核心速记"></a>Flink 核心速记</h1><h2 id="一、基础定位"><a href="#一、基础定位" class="headerlink" title="一、基础定位"></a>一、基础定位</h2><p><strong>Apache Flink</strong>：<strong>分布式实时流处理引擎</strong>，主打<strong>低延迟、高吞吐、Exactly-Once</strong>，同时支持<strong>批处理</strong>（批是流的特例）。<br>口号：<strong>流处理优先，批流一体</strong>。</p>
+<h2 id="二、核心特点"><a href="#二、核心特点" class="headerlink" title="二、核心特点"></a>二、核心特点</h2><ol>
+<li><strong>批流统一</strong><br>底层统一流式模型，批数据 &#x3D; 有界流，实时数据 &#x3D; 无界流，一套代码跑批&#x2F;流。</li>
+<li><strong>状态计算</strong><br>内置<strong>状态管理</strong>（内存+持久化），支持累计、窗口、聚合等计算，是实时计算核心。</li>
+<li><strong>精准语义</strong><br>支持 <strong>Exactly-Once（精确一次）</strong>、At-Least-Once、At-Most-Once。</li>
+<li><strong>低延迟</strong><br>基于<strong>事件驱动</strong>，而非微批，毫秒级延迟。</li>
+<li><strong>高可用 &amp; 容错</strong><br>依靠 <strong>Checkpoint（检查点）+ Savepoint（保存点）</strong> 做故障恢复、版本升级。</li>
+</ol>
+<h2 id="三、核心架构（四大组件）"><a href="#三、核心架构（四大组件）" class="headerlink" title="三、核心架构（四大组件）"></a>三、核心架构（四大组件）</h2><ul>
+<li><strong>JobManager</strong>：主节点，调度任务、协调 Checkpoint、故障恢复（集群大脑）</li>
+<li><strong>TaskManager</strong>：工作节点，执行具体 Task，管理内存&#x2F;网络&#x2F;状态</li>
+<li><strong>Client</strong>：客户端，提交任务、生成执行图</li>
+<li><strong>ResourceManager</strong>：资源管理器（对接 Yarn&#x2F;K8s&#x2F;Standalone）</li>
+</ul>
+<p><strong>运行链路</strong>：Client 提交任务 → JobManager 解析生成执行图 → 分发到 TaskManager 执行。</p>
+<h2 id="四、核心编程模型（两层-API）"><a href="#四、核心编程模型（两层-API）" class="headerlink" title="四、核心编程模型（两层 API）"></a>四、核心编程模型（两层 API）</h2><h3 id="1-底层-API：DataStream（流）-DataSet（批，逐步废弃）"><a href="#1-底层-API：DataStream（流）-DataSet（批，逐步废弃）" class="headerlink" title="1. 底层 API：DataStream（流） &#x2F; DataSet（批，逐步废弃）"></a>1. 底层 API：DataStream（流） &#x2F; DataSet（批，逐步废弃）</h3><p>面向<strong>数据流</strong>，细粒度控制，做复杂计算、底层开发。<br>核心概念：</p>
+<ul>
+<li><strong>Stream</strong>：无界&#x2F;有界数据流</li>
+<li><strong>Operator</strong>：算子（map、filter、flatMap、keyBy、reduce、sink）</li>
+<li><strong>KeyBy</strong>：分组（类似 SQL group by），数据按 key 分到同一下游子任务</li>
+</ul>
+<h3 id="2-高层-API（主流业务使用）"><a href="#2-高层-API（主流业务使用）" class="headerlink" title="2. 高层 API（主流业务使用）"></a>2. 高层 API（主流业务使用）</h3><ul>
+<li><strong>Table API &amp; Flink SQL</strong>：类 SQL 语法，开发效率高，企业最常用，支持窗口、聚合、关联。</li>
+</ul>
+<h2 id="五、高频核心概念（必背）"><a href="#五、高频核心概念（必背）" class="headerlink" title="五、高频核心概念（必背）"></a>五、高频核心概念（必背）</h2><h3 id="1-窗口-Window"><a href="#1-窗口-Window" class="headerlink" title="1. 窗口 Window"></a>1. 窗口 Window</h3><p>流是无限的，靠窗口切分成有限数据集再计算：</p>
+<ul>
+<li><strong>滚动窗口 Tumbling</strong>：固定时长&#x2F;大小，不重叠、不漏数据</li>
+<li><strong>滑动窗口 Sliding</strong>：窗口长度 &gt; 滑动步长，数据重叠</li>
+<li><strong>会话窗口 Session</strong>：按<strong>空闲间隔</strong>划分，一段时间无数据则窗口关闭</li>
+</ul>
+<h3 id="2-时间语义（3-种）"><a href="#2-时间语义（3-种）" class="headerlink" title="2. 时间语义（3 种）"></a>2. 时间语义（3 种）</h3><ol>
+<li><strong>EventTime 事件时间</strong>：数据本身携带的时间戳（业务最常用，保证数据时序正确）</li>
+<li><strong>ProcessingTime 处理时间</strong>：算子所在机器的系统时间（延迟最低，易受机器影响）</li>
+<li><strong>IngestionTime 摄入时间</strong>：数据进入 Flink 的时间</li>
+</ol>
+<blockquote>
+<p>配合 <strong>Watermark（水位线）</strong> 解决 <strong>EventTime 乱序、迟到数据</strong> 问题。</p>
+</blockquote>
+<h3 id="3-Watermark-水位线"><a href="#3-Watermark-水位线" class="headerlink" title="3. Watermark 水位线"></a>3. Watermark 水位线</h3><ul>
+<li>作用：标记<strong>小于该时间的数据已全部到达</strong>，触发窗口计算</li>
+<li>本质：一种特殊数据流，单调递增</li>
+<li>迟到数据处理：设置允许迟到时间、侧输出流丢弃脏数据</li>
+</ul>
+<h3 id="4-状态-State"><a href="#4-状态-State" class="headerlink" title="4. 状态 State"></a>4. 状态 State</h3><ul>
+<li>分类：托管状态（Flink 自动管理，推荐）、原生状态</li>
+<li>常用结构：ValueState、ListState、MapState、ReducingState</li>
+<li>持久化：搭配 Checkpoint 落地到 HDFS&#x2F;Redis 等</li>
+</ul>
+<h3 id="5-Checkpoint-Savepoint"><a href="#5-Checkpoint-Savepoint" class="headerlink" title="5. Checkpoint &amp; Savepoint"></a>5. Checkpoint &amp; Savepoint</h3><ul>
+<li><strong>Checkpoint</strong>：自动周期性快照，<strong>故障自动恢复</strong>，保证 Exactly-Once</li>
+<li><strong>Savepoint</strong>：手动触发快照，用于<strong>版本升级、代码修改、任务启停</strong>，人工运维使用</li>
+</ul>
+<h2 id="六、数据传输-并行度"><a href="#六、数据传输-并行度" class="headerlink" title="六、数据传输 &amp; 并行度"></a>六、数据传输 &amp; 并行度</h2><ul>
+<li><strong>并行度 Parallelism</strong>：决定任务并发能力，每个算子可单独设置并行度</li>
+<li><strong>数据分区策略</strong>：keyBy(哈希)、rebalance(轮询)、rescale、broadcast 等</li>
+</ul>
+<h2 id="七、典型应用场景"><a href="#七、典型应用场景" class="headerlink" title="七、典型应用场景"></a>七、典型应用场景</h2><ol>
+<li>实时大屏、实时指标统计</li>
+<li>实时风控、日志分析、用户行为分析</li>
+<li>实时数仓（分层计算：ODS → DWD → DWS → ADS）</li>
+<li>实时 ETL、数据同步</li>
+</ol>
+<h2 id="八、和-Spark-Streaming-核心区别（面试对比）"><a href="#八、和-Spark-Streaming-核心区别（面试对比）" class="headerlink" title="八、和 Spark Streaming 核心区别（面试对比）"></a>八、和 Spark Streaming 核心区别（面试对比）</h2><ol>
+<li><strong>模型</strong><ul>
+<li>Flink：<strong>纯流模型</strong>，事件驱动，毫秒级延迟</li>
+<li>Spark Streaming：<strong>微批模型</strong>，按批次处理，延迟秒级</li>
+</ul>
+</li>
+<li><strong>时间 &amp; 乱序</strong><ul>
+<li>Flink：原生支持 EventTime + Watermark，乱序处理完善</li>
+<li>Spark 弱支持，乱序处理复杂</li>
+</ul>
+</li>
+<li><strong>状态</strong><ul>
+<li>Flink 内置强状态管理；Spark 依赖外部存储</li>
+</ul>
+</li>
+<li><strong>批流</strong><ul>
+<li>Flink 流优先，批流一体；Spark 批优先，流是补充</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="极简背诵口诀"><a href="#极简背诵口诀" class="headerlink" title="极简背诵口诀"></a>极简背诵口诀</h3><p>Flink &#x3D; <strong>分布式实时流引擎 + 批流一体 + 事件时间+水位线 + 状态+Checkpoint + 低延迟 Exactly-Once</strong>。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://pooiwoop-github-io.pages.dev">皖月清风</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://pooiwoop-github-io.pages.dev/2026/06/14/20260614/">https://pooiwoop-github-io.pages.dev/2026/06/14/20260614/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://pooiwoop-github-io.pages.dev" target="_blank">皖月清风的个人博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Go/">Go</a><a class="post-meta__tags" href="/tags/LRU/">LRU</a><a class="post-meta__tags" href="/tags/SingleFlight/">SingleFlight</a><a class="post-meta__tags" href="/tags/%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF/">缓存击穿</a><a class="post-meta__tags" href="/tags/%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9/">缓存雪崩</a><a class="post-meta__tags" href="/tags/%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/">缓存穿透</a><a class="post-meta__tags" href="/tags/redis/">redis</a><a class="post-meta__tags" href="/tags/Flink/">Flink</a><a class="post-meta__tags" href="/tags/Spark/">Spark</a><a class="post-meta__tags" href="/tags/GMP/">GMP</a><a class="post-meta__tags" href="/tags/slice/">slice</a><a class="post-meta__tags" href="/tags/GO/">GO</a><a class="post-meta__tags" href="/tags/go/">go</a></div><div class="post-share"><div class="social-share" data-image="/img/2026/420c9b9f08de31d166af08e1ac974daf3546594806860148.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/butterfly-extsrc/1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdnjs.cloudflare.com/ajax/libs/butterfly-extsrc/1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/06/12/20260612/" title="20260612"><img class="cover" src="/img/2026/54f730e9c7862a90814852105123e2d93537124387195508.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">20260612</div></div><div class="info-2"><div class="info-item-1">有关扩容，假如在数据量到达阈值时直接开新的哈希表进行扩容，那不会导致那一次的 set 操作用时特别久吗？有什么方案能保证这次 set 不会超时吗？一次性全量迁移确实会造成单次 set 卡顿、超时，业界分「基础扩容」「渐进式扩容」「分片扩容」三类方案解决，以 Java HashMap、Go map、Redis 为例逐一说明。 一、先讲原生一次性扩容（问题根源）流程 元素数量达到负载因子阈值（容量 × 负载因子） 本次 put/set 触发扩容：新建2倍容量数组 一次性遍历原数组所有节点，重新计算哈希、迁移到新数组 本次操作结束  缺点 数据量越大，迁移耗时越长，单次请求阻塞，高并发&#x2F;接口场景极易超时、毛刺严重。 线程不安全场景下还会引发并发死循环（Java JDK1.7 HashMap 经典问题）。   二、主流解决方案（按落地场景划分）方案1：渐进式扩容（增量迁移，最常用）核心思想：不把所有数据迁移压在一次操作里，拆分迁移工作量，分摊到后续每一次读写请求。代表实现：Java 8 HashMap、Go 内置 map、Redis 哈希结构。 执行流程 触发扩容：新建新数组，...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/05/28/20260528/" title="Go底层八股笔记"><img class="cover" src="/img/2026/09a50b243bc714ed50cb35aa3e495a98478921174.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-28</div><div class="info-item-2">Go底层八股笔记</div></div><div class="info-2"><div class="info-item-1">Go 原生 map 不是并发安全的，多协程同时读写会panic: concurrent map read&#x2F;write。 解决方法 互斥锁1234567891011121314151617181920212223242526package mainimport &quot;sync&quot;func main() &#123;	var mu sync.Mutex	m := make(map[int]int)	go func() &#123;		for i := 0; i &lt; 10000; i++ &#123;			mu.Lock()   // 加锁			m[i] = i			mu.Unlock() // 解锁		&#125;	&#125;()	go func() &#123;		for i := 0; i &lt; 10000; i++ &#123;			mu.Lock()			_ = m[i]			mu.Unlock()		&#125;	&#125;()	select &#123;&#125;&#125; 读写锁1234567891011var mu sync....</div></div></div></a><a class="pagination-related" href="/2026/06/05/260605/" title="Go网页抓取，爬虫相关复习"><img class="cover" src="/img/2026/20260323-180427.012-12.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-05</div><div class="info-item-2">Go网页抓取，爬虫相关复习</div></div><div class="info-2"><div class="info-item-1">获取网页内容1234567891011121314151617181920212223242526272829303132package mainimport (	&quot;fmt&quot;	&quot;io&quot;	&quot;net/http&quot;)func main() &#123;	// 目标网址	url := &quot;https://httpbin.org/get&quot;	// 发送 GET 请求	resp, err := http.Get(url)	if err != nil &#123;		fmt.Println(&quot;请求失败:&quot;, err)		return	&#125;	// 必须关闭响应体，防止内存泄漏	defer resp.Body.Close()	// 读取响应内容	body, err := io.ReadAll(resp.Body)	if err != nil &#123;		fmt.Println(&quot;读取内容失败:&quot;, err)		return	&#125;	// 输出网页内容	fmt.Prin...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">皖月清风</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">35</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">64</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/pooi-woop"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://space.bilibili.com/444943062" target="_blank" title="哔哩哔哩(皖月清风)"><i class="fab fa-bilibili" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://space.bilibili.com/2059784457" target="_blank" title="哔哩哔哩(Pooi)"><i class="fas fa-play" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://github.com/pooi-woop" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://www.xiaoheihe.cn/app/user/profile/89276699" target="_blank" title="小黑盒"><i class="fas fa-gamepad" style="color: #00a1d6;"></i></a><a class="social-icon" href="mailto:1960583030@qq.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://steamcommunity.com/profiles/76561198984384066/" target="_blank" title="Steam"><i class="fab fa-steam" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://www.mfuns.net/member/32698" target="_blank" title="喵御宅"><i class="fas fa-cat" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://tieba.baidu.com/home/main?id=tb.1.3a262b89.IwcgVsMq1NwbQUKrazsfTg&amp;fr=userbar" target="_blank" title="百度贴吧"><i class="fas fa-comments" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://music.163.com/#/user/home?id=1359234587" target="_blank" title="网易云音乐"><i class="fas fa-music" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://www.douyin.com/user/MS4wLjABAAAAlK-w0K6GoHT6CzVvfomyhJZoal1ljhvlJieh4u1CsBGAdM2dW_Z3h6SaFK4IanSm?from_tab_name=main" target="_blank" title="抖音"><i class="fab fa-tiktok" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://leetcode.cn/u/woop-r/" target="_blank" title="LeetCode"><i class="fas fa-code" style="color: #00a1d6;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到清风的个人博客！</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#filebeat%E6%98%AFbeats%E7%9A%84%E4%B8%80%E4%B8%AA%E7%BB%84%E4%BB%B6%E3%80%82"><span class="toc-number">1.</span> <span class="toc-text">filebeat是beats的一个组件。</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#GMP%E7%9B%B8%E5%85%B3"><span class="toc-number">2.</span> <span class="toc-text">GMP相关</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#slice-%E4%B8%8D%E6%98%AF%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84"><span class="toc-number">3.</span> <span class="toc-text">slice 不是线程安全的</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#redis-%E6%8E%92%E8%A1%8C%E6%A6%9C%E5%BA%94%E8%AF%A5%E7%94%A8%E5%93%AA%E4%B8%AA%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-number">4.</span> <span class="toc-text">redis 排行榜应该用哪个数据结构</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#LRU-%E8%AF%A6%E8%A7%A3%EF%BC%88%E6%9C%80%E8%BF%91%E6%9C%80%E5%B0%91%E4%BD%BF%E7%94%A8%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">LRU 详解（最近最少使用）</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5"><span class="toc-number">5.1.</span> <span class="toc-text">一、核心概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%AE%9E%E7%8E%B0%E6%80%9D%E8%B7%AF%EF%BC%88%E7%BB%8F%E5%85%B8%E7%BB%84%E5%90%88%EF%BC%89"><span class="toc-number">5.2.</span> <span class="toc-text">二、实现思路（经典组合）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%93%8D%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">5.3.</span> <span class="toc-text">三、操作流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Go-%E6%9E%81%E7%AE%80%E5%AE%9E%E7%8E%B0%EF%BC%88%E5%8F%AF%E7%9B%B4%E6%8E%A5%E8%BF%90%E8%A1%8C%EF%BC%89"><span class="toc-number">5.4.</span> <span class="toc-text">四、Go 极简实现（可直接运行）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%B8%B8%E8%A7%81%E5%8F%98%E7%A7%8D-%E5%AF%B9%E6%AF%94"><span class="toc-number">5.5.</span> <span class="toc-text">五、常见变种 &amp; 对比</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">5.6.</span> <span class="toc-text">总结</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%93%88%E5%B8%8C%E8%A1%A8%EF%BC%88map%EF%BC%89"><span class="toc-number">5.6.1.</span> <span class="toc-text">1. 哈希表（map）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%8F%8C%E5%90%91%E9%93%BE%E8%A1%A8"><span class="toc-number">5.6.2.</span> <span class="toc-text">2. 双向链表</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%AA%E6%9C%89-len-s-cap-s-%E6%97%B6%EF%BC%8C%E5%86%8D%E6%89%A7%E8%A1%8C-append-%E6%89%8D%E4%BC%9A%E8%A7%A6%E5%8F%91%E6%89%A9%E5%AE%B9%E3%80%82"><span class="toc-number">6.</span> <span class="toc-text">只有 len(s) &#x3D;&#x3D; cap(s) 时，再执行 append 才会触发扩容。</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A2%84%E9%98%B2%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF"><span class="toc-number">7.</span> <span class="toc-text">预防缓存击穿</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A2%84%E9%98%B2%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F"><span class="toc-number">8.</span> <span class="toc-text">预防缓存穿透</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%A2%84%E9%98%B2%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9"><span class="toc-number">9.</span> <span class="toc-text">预防缓存雪崩</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#SingleFlight%EF%BC%88%E8%AF%B7%E6%B1%82%E5%90%88%E5%B9%B6-%E5%8D%95%E9%A3%9E%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-number">10.</span> <span class="toc-text">SingleFlight（请求合并&#x2F;单飞模式）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">10.1.</span> <span class="toc-text">一、是什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86%EF%BC%88%E6%9E%81%E7%AE%80%E7%89%88%EF%BC%89"><span class="toc-number">10.2.</span> <span class="toc-text">二、核心原理（极简版）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%A0%B8%E5%BF%83%E4%BD%9C%E7%94%A8%EF%BC%88%E9%9D%A2%E8%AF%95%E5%BF%85%E8%83%8C%EF%BC%89"><span class="toc-number">10.3.</span> <span class="toc-text">三、核心作用（面试必背）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E9%98%B2%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%88%E6%9C%80%E5%B8%B8%E7%94%A8%EF%BC%89"><span class="toc-number">10.3.1.</span> <span class="toc-text">1. 防缓存击穿（最常用）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E5%87%8F%E5%B0%91%E9%87%8D%E5%A4%8D%E8%B0%83%E7%94%A8"><span class="toc-number">10.3.2.</span> <span class="toc-text">2. 减少重复调用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E5%89%8A%E5%B3%B0%E6%8E%A7%E5%B9%B6%E5%8F%91"><span class="toc-number">10.3.3.</span> <span class="toc-text">3. 削峰控并发</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Go-%E4%BB%A3%E7%A0%81%E7%A4%BA%E4%BE%8B%EF%BC%88%E7%9B%B4%E6%8E%A5%E8%83%BD%E7%94%A8%EF%BC%89"><span class="toc-number">10.4.</span> <span class="toc-text">四、Go 代码示例（直接能用）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%85%B3%E9%94%AE%E7%89%B9%E7%82%B9%EF%BC%88vs-%E4%BA%92%E6%96%A5%E9%94%81%EF%BC%89"><span class="toc-number">10.5.</span> <span class="toc-text">五、关键特点（vs 互斥锁）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E9%81%BF%E5%9D%91%E7%82%B9%EF%BC%88%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%EF%BC%89"><span class="toc-number">10.6.</span> <span class="toc-text">六、避坑点（面试高频）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E6%80%BB%E7%BB%93%EF%BC%88%E4%B8%80%E5%8F%A5%E8%AF%9D%EF%BC%89"><span class="toc-number">10.7.</span> <span class="toc-text">七、总结（一句话）</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Flink-%E6%A0%B8%E5%BF%83%E9%80%9F%E8%AE%B0"><span class="toc-number">11.</span> <span class="toc-text">Flink 核心速记</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%9F%BA%E7%A1%80%E5%AE%9A%E4%BD%8D"><span class="toc-number">11.1.</span> <span class="toc-text">一、基础定位</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%A0%B8%E5%BF%83%E7%89%B9%E7%82%B9"><span class="toc-number">11.2.</span> <span class="toc-text">二、核心特点</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%A0%B8%E5%BF%83%E6%9E%B6%E6%9E%84%EF%BC%88%E5%9B%9B%E5%A4%A7%E7%BB%84%E4%BB%B6%EF%BC%89"><span class="toc-number">11.3.</span> <span class="toc-text">三、核心架构（四大组件）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%A0%B8%E5%BF%83%E7%BC%96%E7%A8%8B%E6%A8%A1%E5%9E%8B%EF%BC%88%E4%B8%A4%E5%B1%82-API%EF%BC%89"><span class="toc-number">11.4.</span> <span class="toc-text">四、核心编程模型（两层 API）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%BA%95%E5%B1%82-API%EF%BC%9ADataStream%EF%BC%88%E6%B5%81%EF%BC%89-DataSet%EF%BC%88%E6%89%B9%EF%BC%8C%E9%80%90%E6%AD%A5%E5%BA%9F%E5%BC%83%EF%BC%89"><span class="toc-number">11.4.1.</span> <span class="toc-text">1. 底层 API：DataStream（流） &#x2F; DataSet（批，逐步废弃）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E9%AB%98%E5%B1%82-API%EF%BC%88%E4%B8%BB%E6%B5%81%E4%B8%9A%E5%8A%A1%E4%BD%BF%E7%94%A8%EF%BC%89"><span class="toc-number">11.4.2.</span> <span class="toc-text">2. 高层 API（主流业务使用）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E9%AB%98%E9%A2%91%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5%EF%BC%88%E5%BF%85%E8%83%8C%EF%BC%89"><span class="toc-number">11.5.</span> <span class="toc-text">五、高频核心概念（必背）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%AA%97%E5%8F%A3-Window"><span class="toc-number">11.5.1.</span> <span class="toc-text">1. 窗口 Window</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%97%B6%E9%97%B4%E8%AF%AD%E4%B9%89%EF%BC%883-%E7%A7%8D%EF%BC%89"><span class="toc-number">11.5.2.</span> <span class="toc-text">2. 时间语义（3 种）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Watermark-%E6%B0%B4%E4%BD%8D%E7%BA%BF"><span class="toc-number">11.5.3.</span> <span class="toc-text">3. Watermark 水位线</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E7%8A%B6%E6%80%81-State"><span class="toc-number">11.5.4.</span> <span class="toc-text">4. 状态 State</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-Checkpoint-Savepoint"><span class="toc-number">11.5.5.</span> <span class="toc-text">5. Checkpoint &amp; Savepoint</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93-%E5%B9%B6%E8%A1%8C%E5%BA%A6"><span class="toc-number">11.6.</span> <span class="toc-text">六、数据传输 &amp; 并行度</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%85%B8%E5%9E%8B%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">11.7.</span> <span class="toc-text">七、典型应用场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%92%8C-Spark-Streaming-%E6%A0%B8%E5%BF%83%E5%8C%BA%E5%88%AB%EF%BC%88%E9%9D%A2%E8%AF%95%E5%AF%B9%E6%AF%94%EF%BC%89"><span class="toc-number">11.8.</span> <span class="toc-text">八、和 Spark Streaming 核心区别（面试对比）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%81%E7%AE%80%E8%83%8C%E8%AF%B5%E5%8F%A3%E8%AF%80"><span class="toc-number">11.8.1.</span> <span class="toc-text">极简背诵口诀</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/06/14/20260614/" title="LRU？SingleFlight？Flink？Spark？20260614杂八股"><img src="/img/2026/420c9b9f08de31d166af08e1ac974daf3546594806860148.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="LRU？SingleFlight？Flink？Spark？20260614杂八股"/></a><div class="content"><a class="title" href="/2026/06/14/20260614/" title="LRU？SingleFlight？Flink？Spark？20260614杂八股">LRU？SingleFlight？Flink？Spark？20260614杂八股</a><time datetime="2026-06-14T03:23:09.000Z" title="发表于 2026-06-14 11:23:09">2026-06-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/12/20260612/" title="20260612"><img src="/img/2026/54f730e9c7862a90814852105123e2d93537124387195508.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="20260612"/></a><div class="content"><a class="title" href="/2026/06/12/20260612/" title="20260612">20260612</a><time datetime="2026-06-12T06:20:31.000Z" title="发表于 2026-06-12 14:20:31">2026-06-12</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/11/20260611/" title="前端相关八股"><img src="/img/2026/44bcd4feb90b2decacd09de848a4852d3546594806860148.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="前端相关八股"/></a><div class="content"><a class="title" href="/2026/06/11/20260611/" title="前端相关八股">前端相关八股</a><time datetime="2026-06-11T02:56:48.000Z" title="发表于 2026-06-11 10:56:48">2026-06-11</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/10/20260610/" title="一些八股概念辨析"><img src="/img/2026/556e4613b3d319e666d1912f5c7df3473493131374823437.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="一些八股概念辨析"/></a><div class="content"><a class="title" href="/2026/06/10/20260610/" title="一些八股概念辨析">一些八股概念辨析</a><time datetime="2026-06-10T05:16:27.000Z" title="发表于 2026-06-10 13:16:27">2026-06-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/09/20260609/" title="Agent开发相关八股"><img src="/img/2026/443470ec9bc96d09eaed73ef29e95b3c3546594806860148.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Agent开发相关八股"/></a><div class="content"><a class="title" href="/2026/06/09/20260609/" title="Agent开发相关八股">Agent开发相关八股</a><time datetime="2026-06-09T03:56:07.000Z" title="发表于 2026-06-09 11:56:07">2026-06-09</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/2026/20260323-180427.012-4.jpg);"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 皖月清风</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.1</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"lang":"zh-CN","loading":"lazy","inputPosition":"top"}
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'pooi-woop/pooiwoop',
+      'data-repo-id': 'R_kgDORqG0YQ',
+      'data-category-id': 'DIC_kwDORqG0Yc4C4qyU',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>
