@@ -7069,4 +7069,42 @@ timestamp:受时区影响，相对时间，占4个字节，自动更新
         <tag>go</tag>
       </tags>
   </entry>
+  <entry>
+    <title>20260616</title>
+    <url>/2026/06/16/20260616/</url>
+    <content><![CDATA[<h1 id="fd-是什么"><a href="#fd-是什么" class="headerlink" title="fd 是什么"></a>fd 是什么</h1><h2 id="1-全称"><a href="#1-全称" class="headerlink" title="1. 全称"></a>1. 全称</h2><p><strong>File Descriptor，文件描述符</strong></p>
+<h2 id="2-核心一句话"><a href="#2-核心一句话" class="headerlink" title="2. 核心一句话"></a>2. 核心一句话</h2><p>Linux 下<strong>一切皆文件</strong>：普通文件、TCP连接、UDP套接字、管道、终端、socket、定时器，在内核里全部统一当成文件管理，内核给每一个打开的资源分配一个<strong>非负整数编号</strong>，这个编号就是 fd。</p>
+<h2 id="3-举最简单例子"><a href="#3-举最简单例子" class="headerlink" title="3. 举最简单例子"></a>3. 举最简单例子</h2><p>程序启动默认自带 3 个 fd：</p>
+<ul>
+<li><code>0</code>：标准输入 stdin（控制台输入）</li>
+<li><code>1</code>：标准输出 stdout（打印日志）</li>
+<li><code>2</code>：标准错误 stderr（报错信息）</li>
+</ul>
+<p>你打开一个文本文件，操作系统返回数字 <code>3</code>，那这个文件的 fd&#x3D;3；<br>建立一条TCP客户端连接，返回 <code>4</code>，这条网络连接 fd&#x3D;4。</p>
+<h2 id="4-fd-存在在哪？"><a href="#4-fd-存在在哪？" class="headerlink" title="4. fd 存在在哪？"></a>4. fd 存在在哪？</h2><p>每个进程单独维护一张 <strong>文件描述符表</strong>：</p>
+<ul>
+<li>key：fd 数字</li>
+<li>value：指向内核全局的文件对象（socket&#x2F;文件&#x2F;管道）</li>
+</ul>
+<p>不同进程的 fd 互不干扰，进程A的fd&#x3D;3 和进程B的fd&#x3D;3 是完全不同的资源。</p>
+<h2 id="5-关键特性（面试必考点）"><a href="#5-关键特性（面试必考点）" class="headerlink" title="5. 关键特性（面试必考点）"></a>5. 关键特性（面试必考点）</h2><ol>
+<li><p><strong>资源占用，有上限</strong><br>系统通过 <code>ulimit -n</code> 限制单个进程最大fd数量，默认一般 1024。<br>如果不断新建TCP连接、打开文件不关闭，fd 数字持续上涨，打满上限就报错：<br><code>too many open files</code></p>
+</li>
+<li><p><strong>不调用 close()，fd 不会释放</strong></p>
+</li>
+</ol>
+<ul>
+<li>正常：连接关闭&#x2F;文件close → fd回收，数字复用</li>
+<li>泄漏：goroutine永久阻塞、连接忘记关闭 → fd永久占用，慢慢耗尽</li>
+</ul>
+<ol start="3">
+<li>IO多路复用 select&#x2F;poll&#x2F;epoll 操作的对象就是 fd<br>我们把一堆 socket fd 注册到epoll，内核监控这些fd是否可读可写。</li>
+</ol>
+<h2 id="6-区分两个容易混淆的点（对应你前面的问题）"><a href="#6-区分两个容易混淆的点（对应你前面的问题）" class="headerlink" title="6. 区分两个容易混淆的点（对应你前面的问题）"></a>6. 区分两个容易混淆的点（对应你前面的问题）</h2><ol>
+<li><strong>百万fd（socket连接）</strong>：只是内核里一串数字，占用内存极小，epoll可以轻松管理几十万上百万；</li>
+<li><strong>百万goroutine分别阻塞在每个fd上</strong>：每个goroutine有栈、运行时元数据，内存开销巨大，不能无限开；</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>fd是文件描述符，Linux一切皆文件，打开文件、网络socket、管道都会由内核分配一个整型编号用来标识资源。每个进程有fd上限，资源不关闭会造成fd泄漏，达到上限后无法新建文件或网络连接，epoll、select等IO多路复用都是基于fd实现事件监听。</p>
+]]></content>
+  </entry>
 </search>
