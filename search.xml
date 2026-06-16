@@ -7070,7 +7070,7 @@ timestamp:受时区影响，相对时间，占4个字节，自动更新
       </tags>
   </entry>
   <entry>
-    <title>20260616</title>
+    <title>FD是什么？</title>
     <url>/2026/06/16/20260616/</url>
     <content><![CDATA[<h1 id="fd-是什么"><a href="#fd-是什么" class="headerlink" title="fd 是什么"></a>fd 是什么</h1><h2 id="1-全称"><a href="#1-全称" class="headerlink" title="1. 全称"></a>1. 全称</h2><p><strong>File Descriptor，文件描述符</strong></p>
 <h2 id="2-核心一句话"><a href="#2-核心一句话" class="headerlink" title="2. 核心一句话"></a>2. 核心一句话</h2><p>Linux 下<strong>一切皆文件</strong>：普通文件、TCP连接、UDP套接字、管道、终端、socket、定时器，在内核里全部统一当成文件管理，内核给每一个打开的资源分配一个<strong>非负整数编号</strong>，这个编号就是 fd。</p>
