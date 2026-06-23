@@ -7107,4 +7107,77 @@ timestamp:受时区影响，相对时间，占4个字节，自动更新
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>fd是文件描述符，Linux一切皆文件，打开文件、网络socket、管道都会由内核分配一个整型编号用来标识资源。每个进程有fd上限，资源不关闭会造成fd泄漏，达到上限后无法新建文件或网络连接，epoll、select等IO多路复用都是基于fd实现事件监听。</p>
 ]]></content>
   </entry>
+  <entry>
+    <title>Java相关</title>
+    <url>/2026/06/23/20260623/</url>
+    <content><![CDATA[<p>在 Java 中，方法和属性的访问控制修饰符有 <strong>private</strong>、<strong>protected</strong>、<strong>public</strong> 和 <strong>default</strong>。</p>
+<p>设 Point 为已定义的类，创建 Point 对象 a 的语句是：</p>
+<blockquote>
+<p><strong>答案：</strong> <code>Point a = new Point();</code></p>
+</blockquote>
+<p>为类 Point 定义一个没有返回值的无参数方法 move()，如果想通过类名访问该方法，则该方法的声明为：</p>
+<blockquote>
+<p><strong>答案：</strong> <code>public static void move()</code></p>
+</blockquote>
+<p>使用 SimpleDateFormat 类对日期进行格式化，显示 “16 时 30 分 15 秒” 格式的语句为：</p>
+<blockquote>
+<p><strong>答案：</strong> <code>SimpleDateFormat sdf = new SimpleDateFormat(&quot;HH时mm分ss秒&quot;);</code></p>
+</blockquote>
+<p>设有变量 a 和 b，使用 Math 类中的方法计算 a 的 b 次幂的语句为：</p>
+<blockquote>
+<p><strong>答案：</strong> <code>Math.pow(a, b)</code></p>
+</blockquote>
+<p>假设 <code>s = &quot;Java String&quot;</code>，写出下列操作的输出结果：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>输出结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>s.toUpperCase()</code></td>
+<td><code>JAVA STRING</code></td>
+</tr>
+<tr>
+<td><code>s.toLowerCase()</code></td>
+<td><code>java string</code></td>
+</tr>
+<tr>
+<td><code>s.indexOf(&quot;v&quot;)</code></td>
+<td><code>2</code></td>
+</tr>
+<tr>
+<td><code>s.replace(&quot;ing&quot;, &quot;gni&quot;)</code></td>
+<td><code>Java Strgni</code></td>
+</tr>
+</tbody></table>
+<p>泛型 <code>&lt;K extends Object&gt;</code> 中，extends 并不代表继承，它是 <strong>上限</strong> 限制。</p>
+<p>Collection 接口中，实现获取集合中元素的个数的方法是：</p>
+<blockquote>
+<p><strong>答案：</strong> <code>size()</code></p>
+</blockquote>
+<p>实现 List 接口的类有 <strong>ArrayList</strong> 和 <strong>LinkedList</strong>。</p>
+<p>当使用数组中不存在的索引时，会引发 <strong>ArrayIndexOutOfBoundsException</strong> 异常。</p>
+<p>当布尔表达式为 false 时，<strong>assert（断言）</strong> 语句会触发 AssertionError 异常。</p>
+<p>同一段程序可能产生不止一种异常，可以放置多个 <strong>catch</strong> 子句，一旦代码抛出异常，第一个与之匹配的就会被执行。</p>
+<p>抛出异常、生成异常对象都可以通过 <strong>throw</strong> 语句实现。</p>
+<p>如果不想在方法中处理异常，可以在方法声明时通过 <strong>throws</strong> 关键字将其抛出，交给调用该方法的代码处理。</p>
+<p>Java 中 IO 流根据数据传输方向的不同可分为 <strong>输入流</strong> 和 <strong>输出流</strong>，根据数据传输单位的不同可分为 <strong>字节流</strong> 和 <strong>字符流</strong>。</p>
+<p>File 类中：</p>
+<ul>
+<li>用于确定文件或目录是否存在的方法是 <code>exists()</code></li>
+<li>用于获取绝对路径的方法是 <code>getAbsolutePath()</code></li>
+<li>用于创建文件的方法是 <code>createNewFile()</code></li>
+<li>用于删除文件或目录的方法是 <code>delete()</code></li>
+</ul>
+<p>在文件的任意位置进行既读又写的操作，应当使用 <strong>RandomAccessFile</strong> 类。</p>
+<p>I&#x2F;O 流是由 <strong>java.io</strong> 包来实现的。</p>
+<p>线程的生命周期通常需要经历 5 种状态，分别是 <strong>新建 (New)</strong>、<strong>就绪 (Runnable)</strong>、<strong>运行 (Running)</strong>、<strong>阻塞 (Blocked)</strong> 和 <strong>终止 (Terminated)</strong>。</p>
+<p>Java 中 <strong>yield()</strong> 方法可让步给高优先级或同等优先级的线程。</p>
+]]></content>
+      <tags>
+        <tag>-java</tag>
+      </tags>
+  </entry>
 </search>
