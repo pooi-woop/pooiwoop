@@ -7321,4 +7321,218 @@ timestamp:受时区影响，相对时间，占4个字节，自动更新
         <tag>数据库</tag>
       </tags>
   </entry>
+  <entry>
+    <title>笛卡尔积与自然连接</title>
+    <url>/2026/07/01/20260701/</url>
+    <content><![CDATA[<h1 id="一、笛卡尔积-×-vs-自然连接-⋈"><a href="#一、笛卡尔积-×-vs-自然连接-⋈" class="headerlink" title="一、笛卡尔积 × vs 自然连接 ⋈"></a>一、笛卡尔积 × vs 自然连接 ⋈</h1><p>很多新手容易混淆，先划重点：</p>
+<ol>
+<li><strong>笛卡尔积 (R×S)</strong>：只是把两张表所有行两两配对，不做筛选、不合并同名列；</li>
+<li><strong>自然连接 (R \bowtie S)</strong>：先做笛卡尔积 → 再<strong>自动筛选同名列值相等</strong> → 再<strong>删掉重复的同名字段</strong>，是带条件、去重复列的笛卡尔积。</li>
+</ol>
+<h2 id="前置基础：表结构约定"><a href="#前置基础：表结构约定" class="headerlink" title="前置基础：表结构约定"></a>前置基础：表结构约定</h2><p>设关系（二维表）</p>
+<ul>
+<li>(R(A,B))：属性列 A、B</li>
+<li>(S(B,C))：属性列 B、C<br>公共列：B（同名同类型，自然连接的匹配键）</li>
+</ul>
+<hr>
+<h1 id="二、笛卡尔积怎么算"><a href="#二、笛卡尔积怎么算" class="headerlink" title="二、笛卡尔积怎么算"></a>二、笛卡尔积怎么算</h1><h2 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h2><p>若 (R) 有 (m) 行，(S) 有 (n) 行，笛卡尔积 (R×S) 有 (m×n) 行；<br>列 &#x3D; R全部列 + S全部列，<strong>同名列会重复保留</strong>。</p>
+<h3 id="举例实操"><a href="#举例实操" class="headerlink" title="举例实操"></a>举例实操</h3><p>设：<br>表R</p>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>a1</td>
+<td>b1</td>
+</tr>
+<tr>
+<td>a2</td>
+<td>b2</td>
+</tr>
+</tbody></table>
+<p>表S</p>
+<table>
+<thead>
+<tr>
+<th>B</th>
+<th>C</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>b1</td>
+<td>c1</td>
+</tr>
+<tr>
+<td>b3</td>
+<td>c2</td>
+</tr>
+</tbody></table>
+<h3 id="计算-R×S（笛卡尔积）"><a href="#计算-R×S（笛卡尔积）" class="headerlink" title="计算 R×S（笛卡尔积）"></a>计算 R×S（笛卡尔积）</h3><p>把R每一行，分别拼接S每一行：</p>
+<ol>
+<li>R第一行(a1,b1) + S第一行(b1,c1) → (a1,b1,b1,c1)</li>
+<li>R第一行(a1,b1) + S第二行(b3,c2) → (a1,b1,b3,c2)</li>
+<li>R第二行(a2,b2) + S第一行(b1,c1) → (a2,b2,b1,c1)</li>
+<li>R第二行(a2,b2) + S第二行(b3,c2) → (a2,b2,b3,c2)</li>
+</ol>
+<p>结果表 (R×S)：</p>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B_R</th>
+<th>B_S</th>
+<th>C</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>a1</td>
+<td>b1</td>
+<td>b1</td>
+<td>c1</td>
+</tr>
+<tr>
+<td>a1</td>
+<td>b1</td>
+<td>b3</td>
+<td>c2</td>
+</tr>
+<tr>
+<td>a2</td>
+<td>b2</td>
+<td>b1</td>
+<td>c1</td>
+</tr>
+<tr>
+<td>a2</td>
+<td>b2</td>
+<td>b3</td>
+<td>c2</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>规律：行数&#x3D;R行数 × S行数，列直接拼接，同名字段分开存在。</p>
+</blockquote>
+<hr>
+<h1 id="三、自然连接-R-bowtie-S-完整三步（核心）"><a href="#三、自然连接-R-bowtie-S-完整三步（核心）" class="headerlink" title="三、自然连接 (R \bowtie S) 完整三步（核心）"></a>三、自然连接 (R \bowtie S) 完整三步（核心）</h1><p>自然连接 &#x3D; 带匹配条件的笛卡尔积，固定3步：</p>
+<h2 id="步骤1：计算笛卡尔积-R×S"><a href="#步骤1：计算笛卡尔积-R×S" class="headerlink" title="步骤1：计算笛卡尔积 (R×S)"></a>步骤1：计算笛卡尔积 (R×S)</h2><p>同上，得到所有组合行，包含重复同名列。</p>
+<h2 id="步骤2：筛选：所有同名属性取值相等"><a href="#步骤2：筛选：所有同名属性取值相等" class="headerlink" title="步骤2：筛选：所有同名属性取值相等"></a>步骤2：筛选：<strong>所有同名属性取值相等</strong></h2><p>本例公共属性只有B，只保留：(R.B &#x3D; S.B) 的行<br>看上面积笛卡尔积4行，只有第一行满足 (b1&#x3D;b1)，其余全部删掉。</p>
+<p>筛选后只剩一行：</p>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B_R</th>
+<th>B_S</th>
+<th>C</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>a1</td>
+<td>b1</td>
+<td>b1</td>
+<td>c1</td>
+</tr>
+</tbody></table>
+<h2 id="步骤3：删除重复的同名属性列"><a href="#步骤3：删除重复的同名属性列" class="headerlink" title="步骤3：删除重复的同名属性列"></a>步骤3：删除重复的同名属性列</h2><p>两列B内容完全一样，删掉一列，只留一个B。</p>
+<h2 id="最终自然连接-R-bowtie-S"><a href="#最终自然连接-R-bowtie-S" class="headerlink" title="最终自然连接 (R \bowtie S)"></a>最终自然连接 (R \bowtie S)</h2><table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>a1</td>
+<td>b1</td>
+<td>c1</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="四、总结"><a href="#四、总结" class="headerlink" title="四、总结"></a>四、总结</h1><h2 id="1-笛卡尔积-R×S"><a href="#1-笛卡尔积-R×S" class="headerlink" title="1. 笛卡尔积 R×S"></a>1. 笛卡尔积 R×S</h2><ol>
+<li>行数 &#x3D; R行数 × S行数；</li>
+<li>列 &#x3D; R所有列 + S所有列，同名列不合并、不删除；</li>
+<li>无任何筛选，所有行随便配对。</li>
+</ol>
+<h2 id="2-自然连接-R-⋈-S"><a href="#2-自然连接-R-⋈-S" class="headerlink" title="2. 自然连接 R ⋈ S"></a>2. 自然连接 R ⋈ S</h2><p>三步流程：</p>
+<ol>
+<li>求笛卡尔积 R×S；</li>
+<li>筛选：两张表<strong>所有名字相同的列，对应数值必须相等</strong>；</li>
+<li>去重：删掉重复的同名列，每种属性只保留一列；</li>
+</ol>
+<h3 id="特殊情况补充"><a href="#特殊情况补充" class="headerlink" title="特殊情况补充"></a>特殊情况补充</h3><ol>
+<li>两张表<strong>没有任何同名属性</strong>：自然连接等价于笛卡尔积，不会删任何行；</li>
+<li>没有任何行满足同名列相等：自然连接结果是空表；</li>
+<li>多张公共列（R(A,B,C),S(B,C,D)）：必须同时满足 R.B&#x3D;S.B <strong>且</strong> R.C&#x3D;S.C 才保留。</li>
+</ol>
+<hr>
+<h1 id="五、小练习"><a href="#五、小练习" class="headerlink" title="五、小练习"></a>五、小练习</h1><p>R(A,B,C)</p>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+</tr>
+</tbody></table>
+<p>S(B,C,D)</p>
+<table>
+<thead>
+<tr>
+<th>B</th>
+<th>C</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td>5</td>
+<td>7</td>
+<td>8</td>
+</tr>
+</tbody></table>
+<ol>
+<li>笛卡尔积共 2×2&#x3D;4 行；</li>
+<li>筛选条件：R.B&#x3D;S.B 且 R.C&#x3D;S.C，仅第一行匹配；</li>
+<li>删重复B、C；<br>最终自然连接：<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>9</td>
+</tr>
+</tbody></table>
+</li>
+</ol>
+]]></content>
+      <tags>
+        <tag>数据库,关系代数,笛卡尔积,自然连接,SQL基础</tag>
+      </tags>
+  </entry>
 </search>
