@@ -1,0 +1,357 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>实习第一个月总结：从校园到企业的AIGC实战之旅 | 皖月清风的个人博客</title><meta name="author" content="皖月清风"><meta name="copyright" content="皖月清风"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="实习第一个月总结：从校园到企业的AIGC实战之旅本文章由AI阅读commit记录生成，效果感觉一般，意淫了不少我的想法XD 2026年6月25日到7月25日，我在厦门寻雷科技完成了第一个月的实习。这一个月里，我深度参与了一个电商AIGC平台的开发，同时接触了前端（React&#x2F;Taro）和后端（Go&#x2F;GoZero），算是真正从”写demo”进入了”做产品”的阶段。 项目概览实习所">
+<meta property="og:type" content="article">
+<meta property="og:title" content="实习第一个月总结：从校园到企业的AIGC实战之旅">
+<meta property="og:url" content="https://pooiwoop-github-io.pages.dev/2026/07/25/%E5%AE%9E%E4%B9%A0%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%9C%88%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="皖月清风的个人博客">
+<meta property="og:description" content="实习第一个月总结：从校园到企业的AIGC实战之旅本文章由AI阅读commit记录生成，效果感觉一般，意淫了不少我的想法XD 2026年6月25日到7月25日，我在厦门寻雷科技完成了第一个月的实习。这一个月里，我深度参与了一个电商AIGC平台的开发，同时接触了前端（React&#x2F;Taro）和后端（Go&#x2F;GoZero），算是真正从”写demo”进入了”做产品”的阶段。 项目概览实习所">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pooiwoop-github-io.pages.dev/img/2026/6e4bd4a875bbd00c197446f574df44203546594806860148.jpg">
+<meta property="article:published_time" content="2026-07-25T01:22:12.000Z">
+<meta property="article:modified_time" content="2026-07-25T01:41:19.460Z">
+<meta property="article:author" content="皖月清风">
+<meta property="article:tag" content="AIGC">
+<meta property="article:tag" content="Go">
+<meta property="article:tag" content="前端">
+<meta property="article:tag" content="安全">
+<meta property="article:tag" content="实习">
+<meta property="article:tag" content="工作总结">
+<meta property="article:tag" content="视频生成">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pooiwoop-github-io.pages.dev/img/2026/6e4bd4a875bbd00c197446f574df44203546594806860148.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "实习第一个月总结：从校园到企业的AIGC实战之旅",
+  "url": "https://pooiwoop-github-io.pages.dev/2026/07/25/%E5%AE%9E%E4%B9%A0%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%9C%88%E6%80%BB%E7%BB%93/",
+  "image": "https://pooiwoop-github-io.pages.dev/img/2026/6e4bd4a875bbd00c197446f574df44203546594806860148.jpg",
+  "datePublished": "2026-07-25T01:22:12.000Z",
+  "dateModified": "2026-07-25T01:41:19.460Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "皖月清风",
+      "url": "https://pooiwoop-github-io.pages.dev"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://pooiwoop-github-io.pages.dev/2026/07/25/%E5%AE%9E%E4%B9%A0%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%9C%88%E6%80%BB%E7%BB%93/index.html"><link rel="preconnect" href="//cdnjs.cloudflare.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.1.0/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"pagination":{"enable":false,"hitsPerPage":8},"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdnjs.cloudflare.com/ajax/libs/egjs-infinitegrid/4.13.0/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '实习第一个月总结：从校园到企业的AIGC实战之旅',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><style>
+/* 首页标题样式 */
+.index-info .site-title {
+  font-size: 3rem;
+  opacity: 0.5;
+}
+</style>
+<meta name="generator" content="Hexo 8.1.2"></head><body><div class="bg-animation" id="web_bg" style="background-image: url(/img/2026/8c6271da33fe31a39853e3d1198341d23546594806860148.jpg);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/butterfly-icon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">41</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">73</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(/img/2026/6e4bd4a875bbd00c197446f574df44203546594806860148.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">皖月清风的个人博客</span></a><a class="nav-page-title" href="/"><span class="site-name">实习第一个月总结：从校园到企业的AIGC实战之旅</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">实习第一个月总结：从校园到企业的AIGC实战之旅</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-07-25T01:22:12.000Z" title="发表于 2026-07-25 09:22:12">2026-07-25</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-07-25T01:41:19.460Z" title="更新于 2026-07-25 09:41:19">2026-07-25</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="实习第一个月总结：从校园到企业的AIGC实战之旅"><a href="#实习第一个月总结：从校园到企业的AIGC实战之旅" class="headerlink" title="实习第一个月总结：从校园到企业的AIGC实战之旅"></a>实习第一个月总结：从校园到企业的AIGC实战之旅</h1><p><mark><strong>本文章由AI阅读commit记录生成，效果感觉一般，意淫了不少我的想法XD</strong></mark></p>
+<p>2026年6月25日到7月25日，我在<strong>厦门寻雷科技</strong>完成了第一个月的实习。这一个月里，我深度参与了一个电商AIGC平台的开发，同时接触了前端（React&#x2F;Taro）和后端（Go&#x2F;GoZero），算是真正从”写demo”进入了”做产品”的阶段。</p>
+<h2 id="项目概览"><a href="#项目概览" class="headerlink" title="项目概览"></a>项目概览</h2><p>实习所在的项目是一个<strong>跨境电商AIGC内容生产平台</strong>，核心是用AI帮助商家生成营销视频、管理素材。技术栈方面：</p>
+<ul>
+<li><strong>后端</strong>：Go + GoZero 微服务架构，包含 gateway &#x2F; platform &#x2F; aggregation &#x2F; material 等多个服务</li>
+<li><strong>前端</strong>：Monorepo 架构（pnpm workspace），PC端用 React + Vite，H5用 Taro，App端用 Capacitor</li>
+<li><strong>AI能力</strong>：接入寻雷Bernini、DeepSeek等多个AI服务商</li>
+</ul>
+<p>第一个月我提交了大约 <strong>40+ 个 commit</strong>，覆盖前端和后端，主要集中在以下几个方向。</p>
+<hr>
+<p><img src="/img/2026/27d36227739fabe6e6387a94ee519176531559881.png"></p>
+<h2 id="一、AIGC视频生成：最核心的业务线"><a href="#一、AIGC视频生成：最核心的业务线" class="headerlink" title="一、AIGC视频生成：最核心的业务线"></a>一、AIGC视频生成：最核心的业务线</h2><h3 id="1-1-寻雷Bernini对接"><a href="#1-1-寻雷Bernini对接" class="headerlink" title="1.1 寻雷Bernini对接"></a>1.1 寻雷Bernini对接</h3><p>这是我最先接触、也是贯穿整个月的核心工作。寻雷Bernini是一个AI视频生成服务，我们需要把它接入到平台中来。</p>
+<p><strong>后端方面</strong>：</p>
+<ul>
+<li>对接了 Bernini 的<strong>文生视频&#x2F;图生视频</strong>独立接口，处理了各种上游的异常情况（progress字段类型不一致、超长错误消息截断等）</li>
+<li>实现了<strong>上游无鉴权防御体系</strong>：包括按模型维度隔离的限流策略（窗口缩短到5秒）、并发控制、幂等性保证、计费顺序校验 —— 这套东西让我第一次真正理解了”防御性编程”在真实业务中的意义</li>
+<li>视频下载可靠性增强：OSS跨桶防护、私有OSS 403问题修复、永久失败检测</li>
+<li><strong>孤儿任务清理机制</strong>：寻雷AI进行中的任务如果长时间无响应，自动标记并清理</li>
+</ul>
+<p><strong>前端方面</strong>：</p>
+<ul>
+<li>实现了未完成视频的<strong>静默轮询</strong>机制，修复了”上游已完成但前端一直显示processing”的经典bug</li>
+<li>视频列表的渲染优化、refreshOnShow自动刷新</li>
+<li>海南Bernini前端临时隐藏1080p和&gt;18s的选项（因为上游暂时不支持）</li>
+</ul>
+<h3 id="1-2-视频草稿流式预览-SSE"><a href="#1-2-视频草稿流式预览-SSE" class="headerlink" title="1.2 视频草稿流式预览 (SSE)"></a>1.2 视频草稿流式预览 (SSE)</h3><p>这是我觉得最有意思的一个功能：让用户在创建视频草稿时，能够<strong>实时看到分镜故事板的生成进度</strong>。</p>
+<ul>
+<li>后端实现了 <code>CreateVideoDraftStream</code> 流式接口，基于 DeepSeek 的 SSE 推送</li>
+<li>支持带签名URL的参考文件、Vision图片协议</li>
+<li>前端对接了SSE流式响应，做了状态轮询和错误处理</li>
+<li>整个流程从”点一下等结果”变成了”看着AI一步步生成”，体验提升很大</li>
+</ul>
+<h3 id="1-3-定价与计费体系"><a href="#1-3-定价与计费体系" class="headerlink" title="1.3 定价与计费体系"></a>1.3 定价与计费体系</h3><p>AIGC功能涉及到真金白银的计费，这一个月的改动包括：</p>
+<ul>
+<li>更新AIGC定价体系，支持<strong>按秒时长计价</strong>规则（注意是向下取整，不是向上取整，踩过坑）</li>
+<li>视频翻译的<strong>积分冻结与结算</strong>流程</li>
+<li>视频克隆的积分预估显示</li>
+</ul>
+<hr>
+<p><img src="/img/2026/fc0087b0daa81abfcd58fcc601669f69609497937.jpg"></p>
+<h2 id="二、安全加固：从”能用”到”安全”"><a href="#二、安全加固：从”能用”到”安全”" class="headerlink" title="二、安全加固：从”能用”到”安全”"></a>二、安全加固：从”能用”到”安全”</h2><p>实习第二周开始，导师安排我做了一轮安全审计和加固。这是我第一次系统性地思考Web安全问题，学到了非常多。</p>
+<h3 id="2-1-后端安全"><a href="#2-1-后端安全" class="headerlink" title="2.1 后端安全"></a>2.1 后端安全</h3><ul>
+<li><strong>寻雷AI上游无鉴权防御</strong>：限流、并发控制、幂等性（上面说过了）</li>
+<li><strong>Mock支付HTTP入口禁用</strong>：线上绝对不能留这种调试接口</li>
+<li><strong>脚本白名单清理</strong>：删除了僵尸接口和临时验证码</li>
+<li><strong>API防自动化接口分级草案</strong>：为后续的接口安全治理搭了框架</li>
+<li><strong>第一批&amp;第二批安全问题修复</strong>：包括DB字段类型调整（VARCHAR→TEXT防止截断）、敏感信息泄露等</li>
+</ul>
+<h3 id="2-2-前端安全"><a href="#2-2-前端安全" class="headerlink" title="2.2 前端安全"></a>2.2 前端安全</h3><ul>
+<li><strong>XSS防护</strong>：输出编码、输入校验</li>
+<li><strong>开放重定向修复</strong>：所有跳转链接加白名单校验</li>
+<li><strong>API Key配置加固</strong>：确保不在前端代码中硬编码敏感信息</li>
+</ul>
+<blockquote>
+<p>最大的感受：安全不是一次性的任务，而是需要持续关注的工程实践。很多时候漏洞不是因为”没想到”，而是因为”太着急上线忘了做”。</p>
+</blockquote>
+<hr>
+<p><img src="/img/2026/be59da2899254aac61b9d37080b3511e9457933.png"></p>
+<h2 id="三、工程化与文档沉淀"><a href="#三、工程化与文档沉淀" class="headerlink" title="三、工程化与文档沉淀"></a>三、工程化与文档沉淀</h2><p>导师很强调”代码要能交接”，所以这个月我花了不少时间在文档和工程规范上：</p>
+<ul>
+<li>编写了<strong>前后端部署方案文档</strong>，让新人能快速搭起环境</li>
+<li>沉淀了<strong>Commit规范 + AIGC任务排障知识</strong>到AGENTS.md</li>
+<li>做了<strong>前后端代码质量审计及修复方案</strong></li>
+<li>重组了<strong>安全&#x2F;代码审查与运维经验文档</strong></li>
+<li>补齐了多个client包的type alias，让RPC类型可以透传</li>
+<li>调整了 project 结构，删除废弃的 userextrasetting 包</li>
+</ul>
+<p>这些工作看起来”不写代码”，但实际对团队效率的提升很大。我自己后面排障的时候也经常回看之前写的文档。</p>
+<hr>
+<p><img src="/img/2026/54f730e9c7862a90814852105123e2d93537124387195508.jpg"></p>
+<h2 id="四、基础设施：文件处理与上传"><a href="#四、基础设施：文件处理与上传" class="headerlink" title="四、基础设施：文件处理与上传"></a>四、基础设施：文件处理与上传</h2><h3 id="4-1-OSS-文件处理"><a href="#4-1-OSS-文件处理" class="headerlink" title="4.1 OSS 文件处理"></a>4.1 OSS 文件处理</h3><p>电商平台少不了文件上传下载，这个月涉及了不少OSS相关的工作：</p>
+<ul>
+<li><strong>视频封面改用缓存jpg + OSS实时转WebP</strong>：减少存储成本的同时提升加载速度</li>
+<li>OSS2 新增 <code>GetObjectPublicURL</code> 公共直链构造</li>
+<li><strong>参考图与封面上游URL区分处理</strong>（r2v场景下两者的OSS路径不同）</li>
+<li>私有OSS 403问题的排查和修复</li>
+</ul>
+<h3 id="4-2-上传功能"><a href="#4-2-上传功能" class="headerlink" title="4.2 上传功能"></a>4.2 上传功能</h3><ul>
+<li>前端：修复了<strong>上传失败后重试不发新请求</strong>的Bug（这个问题很坑，之前失败后点重试用的是缓存的旧请求，一直报同样的错）</li>
+<li><code>getUploadUrl</code> 改为 mutation 方式调用，避免缓存问题</li>
+</ul>
+<hr>
+<p><img src="/img/2026/b0386fc60574a66e8d0dd0504e7226e93546970656344828.png"></p>
+<h2 id="五、知识库与RAG功能"><a href="#五、知识库与RAG功能" class="headerlink" title="五、知识库与RAG功能"></a>五、知识库与RAG功能</h2><p>平台有一个”轻量RAG”功能，帮商家基于知识库生成内容。这个月做了一些增强：</p>
+<ul>
+<li>知识库文档列表<strong>会话缓存</strong>（避免每次切换tab都重新请求）</li>
+<li>轻量RAG开关与<strong>商家画像注入</strong>（根据商家特征定制生成内容）</li>
+<li>前端 <code>fetchKnowledgeDocuments</code> 提取 items 局部变量，代码更清晰</li>
+</ul>
+<hr>
+<h2 id="六、踩过的坑-学到的经验"><a href="#六、踩过的坑-学到的经验" class="headerlink" title="六、踩过的坑 &amp; 学到的经验"></a>六、踩过的坑 &amp; 学到的经验</h2><ol>
+<li><strong>类型不一致是魔鬼</strong>：上游接口返回的 progress 有时是 int 有时是 object，兼容处理很烦但必须做</li>
+<li><strong>限流要按维度隔离</strong>：全局限流会让正常用户和异常用户一起被挡，必须按模型&#x2F;用户维度分别限流</li>
+<li><strong>字段长度要留余地</strong>：VARCHAR(255) 不够用，错误消息经常超长，后来改成了 TEXT</li>
+<li><strong>发布前多做预校验</strong>：与其等上游报错再处理，不如在本地就做好参数校验，提前拦截</li>
+<li><strong>好文档能救命</strong>：这个月排了好几次障，都是靠之前写的文档快速定位问题</li>
+<li><strong>安全是持续的事</strong>：不是做完一轮审计就完事了，每次加新功能都要考虑安全</li>
+</ol>
+<hr>
+<h2 id="写在最后"><a href="#写在最后" class="headerlink" title="写在最后"></a>写在最后</h2><p>第一个月的实习强度确实不小，但收获也很大。从最开始的”看代码不知道从哪下手”，到现在能独立排查问题、写方案、提PR，感觉自己在慢慢变成一个真正的工程师。</p>
+<p>下个月的目标：</p>
+<ul>
+<li>继续深入AIGC视频生成链路，争取把整个pipeline吃透</li>
+<li>多一些性能优化和监控方面的工作</li>
+<li>把Go的并发编程和微服务治理再提升一个台阶</li>
+</ul>
+<p>加油吧。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://pooiwoop-github-io.pages.dev">皖月清风</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://pooiwoop-github-io.pages.dev/2026/07/25/%E5%AE%9E%E4%B9%A0%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%9C%88%E6%80%BB%E7%BB%93/">https://pooiwoop-github-io.pages.dev/2026/07/25/%E5%AE%9E%E4%B9%A0%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%9C%88%E6%80%BB%E7%BB%93/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://pooiwoop-github-io.pages.dev" target="_blank">皖月清风的个人博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Go/">Go</a><a class="post-meta__tags" href="/tags/%E5%AE%9E%E4%B9%A0/">实习</a><a class="post-meta__tags" href="/tags/AIGC/">AIGC</a><a class="post-meta__tags" href="/tags/%E8%A7%86%E9%A2%91%E7%94%9F%E6%88%90/">视频生成</a><a class="post-meta__tags" href="/tags/%E5%89%8D%E7%AB%AF/">前端</a><a class="post-meta__tags" href="/tags/%E5%AE%89%E5%85%A8/">安全</a><a class="post-meta__tags" href="/tags/%E5%B7%A5%E4%BD%9C%E6%80%BB%E7%BB%93/">工作总结</a></div><div class="post-share"><div class="social-share" data-image="/img/2026/6e4bd4a875bbd00c197446f574df44203546594806860148.jpg" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/butterfly-extsrc/1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdnjs.cloudflare.com/ajax/libs/butterfly-extsrc/1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/07/25/hello-world/" title="Hexo自动生成的helloworld"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">Hexo自动生成的helloworld</div></div><div class="info-2"><div class="info-item-1">Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick StartCreate a new post1$ hexo new &quot;My New Post&quot;  More info: Writing Run server1$ hexo server  More info: Server Generate static files1$ hexo generate  More info: Generating Deploy to remote sites1$ hexo deploy  More info: Deployment </div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/06/14/20260614/" title="LRU？SingleFlight？Flink？Spark？20260614杂八股"><img class="cover" src="/img/2026/420c9b9f08de31d166af08e1ac974daf3546594806860148.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-14</div><div class="info-item-2">LRU？SingleFlight？Flink？Spark？20260614杂八股</div></div><div class="info-2"><div class="info-item-1">filebeat是beats的一个组件。GMP相关同一时刻：一个 M 只能绑定一个 P，一个 P 也只能被一个 M 使用；生命周期上：M 和 P 不是永久一对一绑定，会因阻塞、抢占、空闲切换动态解绑、重新配对；核心约束：M 执行 G 的前提是临时持有 P，而非终身绑定。 slice 不是线程安全的多个 goroutine 并发读写同一个 slice，一定会出现数据竞争、结果异常、panic。这首歌好听，推荐一下啊【ナースロボ＿タイプT】あの会話の覚書【漣音】 redis 排行榜应该用哪个数据结构ZSet【有序集合】，天然适配排序、分值、去重、分页、排名查询，是 Redis 做榜单的最优解。元素唯一：成员（member）不可重复，天然防重复上榜按分值排序：根据 score 自动升 &#x2F; 降序排列，对应分数、热度、时间高效排名查询：查询名次、区间分页、查某人排名时间复杂度极低支持分数更新：直接修改 score，集合自动重排 1234567891011121314151617# 1. 添加/更新成员分数（上榜/加分）ZADD rank 99 &quot;user1&quot; ...</div></div></div></a><a class="pagination-related" href="/2026/06/05/260605/" title="Go网页抓取，爬虫相关复习"><img class="cover" src="/img/2026/20260323-180427.012-12.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-06-05</div><div class="info-item-2">Go网页抓取，爬虫相关复习</div></div><div class="info-2"><div class="info-item-1">获取网页内容1234567891011121314151617181920212223242526272829303132package mainimport (	&quot;fmt&quot;	&quot;io&quot;	&quot;net/http&quot;)func main() &#123;	// 目标网址	url := &quot;https://httpbin.org/get&quot;	// 发送 GET 请求	resp, err := http.Get(url)	if err != nil &#123;		fmt.Println(&quot;请求失败:&quot;, err)		return	&#125;	// 必须关闭响应体，防止内存泄漏	defer resp.Body.Close()	// 读取响应内容	body, err := io.ReadAll(resp.Body)	if err != nil &#123;		fmt.Println(&quot;读取内容失败:&quot;, err)		return	&#125;	// 输出网页内容	fmt.Prin...</div></div></div></a><a class="pagination-related" href="/2026/05/28/20260528/" title="Go底层八股笔记"><img class="cover" src="/img/2026/09a50b243bc714ed50cb35aa3e495a98478921174.jpg" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-05-28</div><div class="info-item-2">Go底层八股笔记</div></div><div class="info-2"><div class="info-item-1">Go 原生 map 不是并发安全的，多协程同时读写会panic: concurrent map read&#x2F;write。 解决方法 互斥锁1234567891011121314151617181920212223242526package mainimport &quot;sync&quot;func main() &#123;	var mu sync.Mutex	m := make(map[int]int)	go func() &#123;		for i := 0; i &lt; 10000; i++ &#123;			mu.Lock()   // 加锁			m[i] = i			mu.Unlock() // 解锁		&#125;	&#125;()	go func() &#123;		for i := 0; i &lt; 10000; i++ &#123;			mu.Lock()			_ = m[i]			mu.Unlock()		&#125;	&#125;()	select &#123;&#125;&#125; 读写锁1234567891011var mu sync....</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/butterfly-icon.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">皖月清风</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">41</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">73</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/pooi-woop"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://space.bilibili.com/444943062" target="_blank" title="哔哩哔哩(皖月清风)"><i class="fab fa-bilibili" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://space.bilibili.com/2059784457" target="_blank" title="哔哩哔哩(Pooi)"><i class="fas fa-play" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://github.com/pooi-woop" target="_blank" title="GitHub"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="https://www.xiaoheihe.cn/app/user/profile/89276699" target="_blank" title="小黑盒"><i class="fas fa-gamepad" style="color: #00a1d6;"></i></a><a class="social-icon" href="mailto:1960583030@qq.com" target="_blank" title="邮箱"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://steamcommunity.com/profiles/76561198984384066/" target="_blank" title="Steam"><i class="fab fa-steam" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://www.mfuns.net/member/32698" target="_blank" title="喵御宅"><i class="fas fa-cat" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://tieba.baidu.com/home/main?id=tb.1.3a262b89.IwcgVsMq1NwbQUKrazsfTg&amp;fr=userbar" target="_blank" title="百度贴吧"><i class="fas fa-comments" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://music.163.com/#/user/home?id=1359234587" target="_blank" title="网易云音乐"><i class="fas fa-music" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://www.douyin.com/user/MS4wLjABAAAAlK-w0K6GoHT6CzVvfomyhJZoal1ljhvlJieh4u1CsBGAdM2dW_Z3h6SaFK4IanSm?from_tab_name=main" target="_blank" title="抖音"><i class="fab fa-tiktok" style="color: #00a1d6;"></i></a><a class="social-icon" href="https://leetcode.cn/u/woop-r/" target="_blank" title="LeetCode"><i class="fas fa-code" style="color: #00a1d6;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到清风的个人博客！</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%9E%E4%B9%A0%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%9C%88%E6%80%BB%E7%BB%93%EF%BC%9A%E4%BB%8E%E6%A0%A1%E5%9B%AD%E5%88%B0%E4%BC%81%E4%B8%9A%E7%9A%84AIGC%E5%AE%9E%E6%88%98%E4%B9%8B%E6%97%85"><span class="toc-number">1.</span> <span class="toc-text">实习第一个月总结：从校园到企业的AIGC实战之旅</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE%E6%A6%82%E8%A7%88"><span class="toc-number">1.1.</span> <span class="toc-text">项目概览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81AIGC%E8%A7%86%E9%A2%91%E7%94%9F%E6%88%90%EF%BC%9A%E6%9C%80%E6%A0%B8%E5%BF%83%E7%9A%84%E4%B8%9A%E5%8A%A1%E7%BA%BF"><span class="toc-number">1.2.</span> <span class="toc-text">一、AIGC视频生成：最核心的业务线</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E5%AF%BB%E9%9B%B7Bernini%E5%AF%B9%E6%8E%A5"><span class="toc-number">1.2.1.</span> <span class="toc-text">1.1 寻雷Bernini对接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E8%A7%86%E9%A2%91%E8%8D%89%E7%A8%BF%E6%B5%81%E5%BC%8F%E9%A2%84%E8%A7%88-SSE"><span class="toc-number">1.2.2.</span> <span class="toc-text">1.2 视频草稿流式预览 (SSE)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E5%AE%9A%E4%BB%B7%E4%B8%8E%E8%AE%A1%E8%B4%B9%E4%BD%93%E7%B3%BB"><span class="toc-number">1.2.3.</span> <span class="toc-text">1.3 定价与计费体系</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%AE%89%E5%85%A8%E5%8A%A0%E5%9B%BA%EF%BC%9A%E4%BB%8E%E2%80%9D%E8%83%BD%E7%94%A8%E2%80%9D%E5%88%B0%E2%80%9D%E5%AE%89%E5%85%A8%E2%80%9D"><span class="toc-number">1.3.</span> <span class="toc-text">二、安全加固：从”能用”到”安全”</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%90%8E%E7%AB%AF%E5%AE%89%E5%85%A8"><span class="toc-number">1.3.1.</span> <span class="toc-text">2.1 后端安全</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%89%8D%E7%AB%AF%E5%AE%89%E5%85%A8"><span class="toc-number">1.3.2.</span> <span class="toc-text">2.2 前端安全</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%B7%A5%E7%A8%8B%E5%8C%96%E4%B8%8E%E6%96%87%E6%A1%A3%E6%B2%89%E6%B7%80"><span class="toc-number">1.4.</span> <span class="toc-text">三、工程化与文档沉淀</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%EF%BC%9A%E6%96%87%E4%BB%B6%E5%A4%84%E7%90%86%E4%B8%8E%E4%B8%8A%E4%BC%A0"><span class="toc-number">1.5.</span> <span class="toc-text">四、基础设施：文件处理与上传</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-OSS-%E6%96%87%E4%BB%B6%E5%A4%84%E7%90%86"><span class="toc-number">1.5.1.</span> <span class="toc-text">4.1 OSS 文件处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E4%B8%8A%E4%BC%A0%E5%8A%9F%E8%83%BD"><span class="toc-number">1.5.2.</span> <span class="toc-text">4.2 上传功能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%9F%A5%E8%AF%86%E5%BA%93%E4%B8%8ERAG%E5%8A%9F%E8%83%BD"><span class="toc-number">1.6.</span> <span class="toc-text">五、知识库与RAG功能</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E8%B8%A9%E8%BF%87%E7%9A%84%E5%9D%91-%E5%AD%A6%E5%88%B0%E7%9A%84%E7%BB%8F%E9%AA%8C"><span class="toc-number">1.7.</span> <span class="toc-text">六、踩过的坑 &amp; 学到的经验</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E6%9C%80%E5%90%8E"><span class="toc-number">1.8.</span> <span class="toc-text">写在最后</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2026/07/25/%E5%AE%9E%E4%B9%A0%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%9C%88%E6%80%BB%E7%BB%93/" title="实习第一个月总结：从校园到企业的AIGC实战之旅"><img src="/img/2026/6e4bd4a875bbd00c197446f574df44203546594806860148.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="实习第一个月总结：从校园到企业的AIGC实战之旅"/></a><div class="content"><a class="title" href="/2026/07/25/%E5%AE%9E%E4%B9%A0%E7%AC%AC%E4%B8%80%E4%B8%AA%E6%9C%88%E6%80%BB%E7%BB%93/" title="实习第一个月总结：从校园到企业的AIGC实战之旅">实习第一个月总结：从校园到企业的AIGC实战之旅</a><time datetime="2026-07-25T01:22:12.000Z" title="发表于 2026-07-25 09:22:12">2026-07-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/07/25/hello-world/" title="Hexo自动生成的helloworld">Hexo自动生成的helloworld</a><time datetime="2026-07-25T01:18:36.408Z" title="发表于 2026-07-25 09:18:36">2026-07-25</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/07/01/20260701/" title="笛卡尔积与自然连接"><img src="/img/2026/27d36227739fabe6e6387a94ee519176531559881.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="笛卡尔积与自然连接"/></a><div class="content"><a class="title" href="/2026/07/01/20260701/" title="笛卡尔积与自然连接">笛卡尔积与自然连接</a><time datetime="2026-07-01T00:56:48.000Z" title="发表于 2026-07-01 08:56:48">2026-07-01</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/29/20260629/" title="数据库相关概念"><img src="/img/2026/0756406d3c21d5ec130158345a442e931964762210.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="数据库相关概念"/></a><div class="content"><a class="title" href="/2026/06/29/20260629/" title="数据库相关概念">数据库相关概念</a><time datetime="2026-06-29T06:37:55.000Z" title="发表于 2026-06-29 14:37:55">2026-06-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/06/28/20260628/" title="数据库理论相关"><img src="/img/2026/3ad2de3e0307e95b7f89b737cfd3ab9f171902792.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="数据库理论相关"/></a><div class="content"><a class="title" href="/2026/06/28/20260628/" title="数据库理论相关">数据库理论相关</a><time datetime="2026-06-28T02:04:28.000Z" title="发表于 2026-06-28 10:04:28">2026-06-28</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url(/img/2026/20260323-180427.012-4.jpg);"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 皖月清风</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"lang":"zh-CN","loading":"lazy","inputPosition":"top"}
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'pooi-woop/pooiwoop',
+      'data-repo-id': 'R_kgDORqG0YQ',
+      'data-category-id': 'DIC_kwDORqG0Yc4C4qyU',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><i class="fas fa-spinner fa-pulse" id="loading-status" hidden="hidden"></i><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="local-search-input"><input placeholder="搜索文章" type="text"/></div><hr/><div id="local-search-results"></div><div class="ais-Pagination" id="local-search-pagination" style="display:none;"><ul class="ais-Pagination-list"></ul></div><div id="local-search-stats"></div></div><div id="search-mask"></div><script src="/js/search/local-search.js?v=5.5.4"></script></div></div></body></html>
